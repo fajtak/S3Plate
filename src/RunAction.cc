@@ -71,12 +71,17 @@ void RunAction::BeginOfRunAction(const G4Run* aRun)
     photoWaveProduced = new TH1F("waveProduced","Wavelength spectra of produced photons",1000,0,1000);
     photoWaveDetected = new TH1F("waveDetected","Wavelength spectra of detected photons",1000,0,1000);
     time = new TH1F("time", "Time distribution of detected p.e.",1000,0,1000);
+    fiber = new TH1F("fiber", "Distribution of hited fibers",30,-15,15);
     std::string fileName = "time";
+    std::string fileName2 = "fiber";
     char print[50];
     sprintf(print, "%f%f", partGen->GetX()/cm , partGen->GetY()/cm);
     fileName += print;
     fileName += ".txt";
+    fileName2 += print;
+    fileName2 += ".txt";
     timeFile.open(fileName.c_str());
+    fiberFile.open(fileName2.c_str());
 }
 
 
@@ -95,6 +100,7 @@ void RunAction::fillPerEvent(int interact, int pass, G4double energy, G4double e
   if (interact != 0 ) histProduced->Fill(interact);
   if (pass != 0 )histDetected->Fill(pass);
   timeFile << -1 << G4endl;
+  fiberFile << -1 << G4endl;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -131,9 +137,11 @@ void RunAction::EndOfRunAction(const G4Run* aRun)
   photoWaveProduced->Write();
   photoWaveDetected->Write();
   time->Write();
+  fiber->Write();
   timeFile.close();
+  fiberFile.close();
 
-  dimensions->Write();
+  //dimensions->Write();
 
   G4cout<<"Closing file..."<<G4endl;
   f->cd();
@@ -156,4 +164,10 @@ void RunAction::EndOfRunAction(const G4Run* aRun)
  {
     time->Fill(newTime);
     timeFile << newTime << " ";
+ }
+
+ void RunAction::fillFiber(int fiberID)
+ {
+    fiber->Fill(fiberID);
+    fiberFile << fiberID << " ";
  }

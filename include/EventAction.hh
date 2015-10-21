@@ -60,6 +60,7 @@ public:
   void SetProducedPhotons(int newValue){nProduced = newValue;};
   void PassWaveRun(int whichHist, double wavelength);
   void AddTime(double time);
+  void AddFiberDetected(int fiberID);
 
   void SetPrintModulo(G4int    val)  {printModulo = val;};
 

@@ -65,6 +65,7 @@ class RunAction : public G4UserRunAction
         void fillPhotoWaveProduced(double wavelength);
         void fillPhotoWaveDetected(double wavelength);
         void fillTime(double time);
+        void fillFiber(int fiberID);
 
     private:
 
@@ -80,8 +81,10 @@ class RunAction : public G4UserRunAction
         TH1F *photoWaveProduced;
         TH1F *photoWaveDetected;
         TH1F *time;
+        TH1F *fiber;
 
         ofstream timeFile;
+        ofstream fiberFile;
 
         PrimaryGeneratorAction* partGen;
 };

@@ -43,6 +43,8 @@
 
 #include "G4Step.hh"
 
+#include <math.h>
+
 ////#include "G4RunManager.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -134,6 +136,7 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
 	  eventaction->AddDetection();
 	  eventaction->PassWaveRun(2,1240/(theTrack->GetDynamicParticle()->GetKineticEnergy()/eV));
 	  eventaction->AddTime(theTrack->GetGlobalTime()/ns);
+	  eventaction->AddFiberDetected((int)round(theTrack->GetPosition().getY()/10));
 	  break;
 	}
       case FresnelReflection:

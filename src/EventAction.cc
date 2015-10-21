@@ -122,3 +122,8 @@ void EventAction::AddTime(double time)
 {
     runAct->fillTime(time);
 }
+
+void EventAction::AddFiberDetected(int fiberID)
+{
+    runAct->fillFiber(fiberID);
+}
