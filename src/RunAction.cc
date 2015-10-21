@@ -115,8 +115,15 @@ void RunAction::EndOfRunAction(const G4Run* aRun)
      << G4endl;
 
   f=new TFile("temp.root","update");
-  f->mkdir("Results");
-  f->cd("Results");
+
+  TObjString*  dimensions = new TObjString();
+
+  char print[50];
+  sprintf(print, "%.2f %.2f %.2f cm", partGen->GetX()/cm , partGen->GetY()/cm, partGen->GetZ()/cm);
+  dimensions->SetString(print);
+
+  f->mkdir(print);
+  f->cd(print);
   hist->Write();
   histDead->Write();
   histProduced->Write();
@@ -126,14 +133,10 @@ void RunAction::EndOfRunAction(const G4Run* aRun)
   time->Write();
   timeFile.close();
 
-    TObjString*  dimensions = new TObjString();
-
-    char print[50];
-    sprintf(print, "%f %f %f cm", partGen->GetX()/cm , partGen->GetY()/cm, partGen->GetZ()/cm);
-    dimensions->SetString(print);
-    dimensions->Write();
+  dimensions->Write();
 
   G4cout<<"Closing file..."<<G4endl;
+  f->cd();
   f->Close();
 }
 

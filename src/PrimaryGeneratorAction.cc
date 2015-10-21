@@ -64,8 +64,8 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(
     particleGun->SetParticleDefinition(particle);
     particleGun->SetParticleEnergy(1.0*MeV);
 
-    x = 1.0*cm;
-    y = 1.0*cm;
+    x = 0.0*cm;
+    y = 0.0*cm;
     z = 1.0*cm;
 
     //G4double x = (-1.0+2.0*G4UniformRand())*20.0*cm;

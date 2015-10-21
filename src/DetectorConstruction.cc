@@ -294,11 +294,20 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     G4double height_vacuumGap = 0.58*mm;
     G4double height_photoca = 0.02*mm;
 
+    G4double pmtX = 0.6*mm;
+    G4double photocathX = 0.02*mm;
+    G4double pmtY = 18.0*mm;
+    G4double pmtZ = 10.0*mm;
+
     G4Tubs* pmt = new G4Tubs("pmt_tube",innerRadius_pmt,outerRadius_pmt,
 		     height_pmt/2,startAngle_pmt,spanningAngle_pmt);
 
     G4Tubs* photocath = new G4Tubs("photocath_tube",innerRadius_pmt,outerRadius_pmt,
-			   height_photoca/2,startAngle_pmt,spanningAngle_pmt);
+             height_photoca/2,startAngle_pmt,spanningAngle_pmt);
+
+    //G4Box* pmt = new G4Box("pmt_box",pmtX/2,pmtY/2,pmtZ/2);
+
+    //G4Box* photocath = new G4Box("photocath_box",photocathX/2,pmtY/2,pmtZ/2);
 
     G4LogicalVolume* pmt_log = new G4LogicalVolume(pmt,borGlass,
 				  "pmt_log");
@@ -310,9 +319,13 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 				       photocath_log,"photocath",
 				       pmt_log,false,0);
 
+    //G4PVPlacement* photocath_phys = new G4PVPlacement(0,G4ThreeVector(-pmtX/2+photocathX/2,0,0),photocath_log,"photocath",pmt_log,false,0);
+
     G4PVPlacement* pmt_phys = new G4PVPlacement(0,G4ThreeVector(0,0,+holder_z/2-height_pmt/2),
 				       pmt_log,"pmt",
 				       Holder_log,false,0);
+
+    //G4PVPlacement* pmt_phys = new G4PVPlacement(0,G4ThreeVector(-detX/2+pmtX/2,0,0),pmt_log,"pmt",det_log,false,0);
 
     MaterialPropertiesScintillator();
     MaterialPropertiesTeflon(mylar_log,air_phys,mylar_phys);

@@ -95,6 +95,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
      G4Material*        mylar;
      G4Material*        borGlass;
      G4Material*        teflon;
+     G4Material*        teflonMat;
 
   private:
 
