@@ -100,7 +100,7 @@ void RunAction::fillPerEvent(int interact, int pass, G4double energy, G4double e
   if (interact != 0 ) histProduced->Fill(interact);
   if (pass != 0 )histDetected->Fill(pass);
   timeFile << -1 << G4endl;
-  fiberFile << -1 << G4endl;
+  fiberFile << -9999 << G4endl;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
