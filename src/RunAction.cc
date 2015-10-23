@@ -141,6 +141,15 @@ void RunAction::EndOfRunAction(const G4Run* aRun)
   timeFile.close();
   fiberFile.close();
 
+    delete hist;
+    delete histDead;
+    delete histProduced;
+    delete histDetected;
+    delete photoWaveProduced;
+    delete photoWaveDetected;
+    delete time;
+    delete fiber;
+
   //dimensions->Write();
 
   G4cout<<"Closing file..."<<G4endl;

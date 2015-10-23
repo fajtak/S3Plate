@@ -57,6 +57,10 @@ public:
   double GetY(void){return y;};
   double GetZ(void){return z;};
 
+  void SetX(double newX){x = newX*cm;};
+  void SetY(double newY){y = newY*cm;};
+  void SetZ(double newZ){z = newZ*cm;};
+
 private:
   G4ParticleGun*           particleGun;	 //pointer a to G4  class
   DetectorConstruction*    Detector;     //pointer to the geometry

@@ -27,7 +27,7 @@
 // $Id: PrimaryGeneratorMessenger.cc,v 1.1 2010-10-18 15:56:17 maire Exp $
 // GEANT4 tag $Name: geant4-09-04-patch-01 $
 //
-// 
+//
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -37,6 +37,7 @@
 #include "PrimaryGeneratorAction.hh"
 #include "G4UIdirectory.hh"
 #include "G4UIcmdWithAString.hh"
+#include "G4UIcmdWith3Vector.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -44,16 +45,19 @@ PrimaryGeneratorMessenger::PrimaryGeneratorMessenger(
                                           PrimaryGeneratorAction* Gun)
 :Action(Gun)
 {
-  gunDir = new G4UIdirectory("/N03/gun/");
+  gunDir = new G4UIdirectory("/myPG/");
   gunDir->SetGuidance("PrimaryGenerator control");
-   
-  RndmCmd = new G4UIcmdWithAString("/N03/gun/rndm",this);
+
+  RndmCmd = new G4UIcmdWithAString("/myPG/rndm",this);
   RndmCmd->SetGuidance("Shoot randomly the incident particle.");
   RndmCmd->SetGuidance("  Choice : on(default), off");
   RndmCmd->SetParameterName("choice",true);
   RndmCmd->SetDefaultValue("on");
   RndmCmd->SetCandidates("on off");
   RndmCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
+
+  PositionCmd = new G4UIcmdWith3Vector("/myPG/position", this);
+  PositionCmd->SetGuidance("Set the position of the primary particle.");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -62,15 +66,23 @@ PrimaryGeneratorMessenger::~PrimaryGeneratorMessenger()
 {
   delete RndmCmd;
   delete gunDir;
+  delete PositionCmd;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void PrimaryGeneratorMessenger::SetNewValue(
                                         G4UIcommand* command, G4String newValue)
-{ 
-  if( command == RndmCmd )
-   { Action->SetRndmFlag(newValue);}
+{
+    if( command == RndmCmd )
+    {
+        Action->SetRndmFlag(newValue);
+    }else if (command == PositionCmd )
+    {
+        Action->SetX(PositionCmd->GetNew3VectorValue(newValue).getX());
+        Action->SetY(PositionCmd->GetNew3VectorValue(newValue).getY());
+        Action->SetZ(PositionCmd->GetNew3VectorValue(newValue).getZ());
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

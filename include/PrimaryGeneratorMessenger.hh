@@ -27,7 +27,7 @@
 // $Id: PrimaryGeneratorMessenger.hh,v 1.1 2010-10-18 15:56:17 maire Exp $
 // GEANT4 tag $Name: geant4-09-04-patch-01 $
 //
-// 
+//
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -41,6 +41,7 @@
 class PrimaryGeneratorAction;
 class G4UIdirectory;
 class G4UIcmdWithAString;
+class G4UIcmdWith3Vector;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -49,13 +50,15 @@ class PrimaryGeneratorMessenger: public G4UImessenger
 public:
   PrimaryGeneratorMessenger(PrimaryGeneratorAction*);
   virtual ~PrimaryGeneratorMessenger();
-    
+
   void SetNewValue(G4UIcommand*, G4String);
-    
+
 private:
   PrimaryGeneratorAction* Action;
-  G4UIdirectory*          gunDir; 
+  G4UIdirectory*          gunDir;
   G4UIcmdWithAString*     RndmCmd;
+  G4UIcmdWith3Vector*     PositionCmd;
+
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
