@@ -42,6 +42,7 @@ class PrimaryGeneratorAction;
 class G4UIdirectory;
 class G4UIcmdWithAString;
 class G4UIcmdWith3Vector;
+class G4UIcmdWithABool;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -58,7 +59,9 @@ private:
   G4UIdirectory*          gunDir;
   G4UIcmdWithAString*     RndmCmd;
   G4UIcmdWith3Vector*     PositionCmd;
-
+  G4UIcmdWithABool*       PointCmd;
+  G4UIcmdWithABool*       WholeDetCmd;
+  G4UIcmdWithABool*       KalabashkyCmd;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -75,7 +75,7 @@ void RunAction::BeginOfRunAction(const G4Run* aRun)
     std::string fileName = "time";
     std::string fileName2 = "fiber";
     char print[50];
-    sprintf(print, "%f%f", partGen->GetX()/cm , partGen->GetY()/cm);
+    sprintf(print, "%.2fx%.2fx%.2f", partGen->GetX()/cm , partGen->GetY()/cm, partGen->GetZ()/cm);
     fileName += print;
     fileName += ".txt";
     fileName2 += print;

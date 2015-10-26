@@ -38,6 +38,7 @@
 #include "G4UIdirectory.hh"
 #include "G4UIcmdWithAString.hh"
 #include "G4UIcmdWith3Vector.hh"
+#include "G4UIcmdWithABool.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -58,6 +59,10 @@ PrimaryGeneratorMessenger::PrimaryGeneratorMessenger(
 
   PositionCmd = new G4UIcmdWith3Vector("/myPG/position", this);
   PositionCmd->SetGuidance("Set the position of the primary particle.");
+
+  PointCmd = new G4UIcmdWithABool("/myPG/point",this);
+  WholeDetCmd = new G4UIcmdWithABool("/myPG/wholeDet",this);
+  KalabashkyCmd = new G4UIcmdWithABool("/myPG/kalabashky",this);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -67,6 +72,9 @@ PrimaryGeneratorMessenger::~PrimaryGeneratorMessenger()
   delete RndmCmd;
   delete gunDir;
   delete PositionCmd;
+  delete PointCmd;
+  delete WholeDetCmd;
+  delete KalabashkyCmd;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -82,6 +90,15 @@ void PrimaryGeneratorMessenger::SetNewValue(
         Action->SetX(PositionCmd->GetNew3VectorValue(newValue).getX());
         Action->SetY(PositionCmd->GetNew3VectorValue(newValue).getY());
         Action->SetZ(PositionCmd->GetNew3VectorValue(newValue).getZ());
+    }else if (command == PointCmd )
+    {
+        Action->SetPoint();
+    }else if (command == WholeDetCmd )
+    {
+        Action->SetWholeDet();
+    }else if (command == KalabashkyCmd )
+    {
+        Action->SetKalabashky();
     }
 }
 

@@ -61,6 +61,10 @@ public:
   void SetY(double newY){y = newY*cm;};
   void SetZ(double newZ){z = newZ*cm;};
 
+  void SetPoint(void);
+  void SetWholeDet(void);
+  void SetKalabashky(void);
+
 private:
   G4ParticleGun*           particleGun;	 //pointer a to G4  class
   DetectorConstruction*    Detector;     //pointer to the geometry
@@ -71,6 +75,10 @@ private:
   G4double x;
   G4double y;
   G4double z;
+
+  G4bool point;
+  G4bool wholeDet;
+  G4bool kalabashky;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
