@@ -95,7 +95,7 @@ void DetectorConstruction::DefineMaterials()
     aluminiumMaterial = man->FindOrBuildMaterial("G4_Al");
     airMaterial = man->FindOrBuildMaterial("G4_AIR");
     mylar = man->FindOrBuildMaterial("G4_MYLAR");
-    teflon = man->FindOrBuildMaterial("G4_TEFLON");
+    //teflon = man->FindOrBuildMaterial("G4_TEFLON");
     borGlass = man->FindOrBuildMaterial("G4_Pyrex_Glass");
 
     G4double a, z, density;
@@ -108,6 +108,7 @@ void DetectorConstruction::DefineMaterials()
     G4Element* C  = new G4Element("Carbon","C", z=6.,a=12.01*g/mole);
     G4Element* N = new G4Element("N", "N", z=7., a= 14.01*g/mole);
     G4Element* O = new G4Element("O"  , "O", z=8., a= 16.00*g/mole);
+    G4Element* F  = man->FindOrBuildElement("F");
 
     scintilator = new G4Material("Scint", density= 1.03*g/cm3, 2);
     scintilator->AddElement(C, 0.475);
@@ -125,6 +126,10 @@ void DetectorConstruction::DefineMaterials()
     fPethylene = new G4Material("fPethylene", density=1430*kg/m3,2);
     fPethylene->AddElement(H,nH_eth);
     fPethylene->AddElement(C,nC_eth);
+
+    teflon = new G4Material("TeflonMat", density= 0.2*g/cm3, 2);
+    teflon->AddElement(C, 2);
+    teflon->AddElement(F, 4);
 
     // print table
     //
@@ -180,25 +185,17 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     detY = 20.0*cm;
     detZ = 1.0*cm;
 
-    double airX = detX + 2*50.0*um;
-    double airY = detY + 2*50.0*um;
-    double airZ = detZ + 2*50.0*um;
+    double teflonX = detX + 2*800.0*um;
+    double teflonY = detY + 2*800.0*um;
+    double teflonZ = detZ + 2*800.0*um;
 
-    double mylarX = airX + 2*70.0*um;
-    double mylarY = airY + 2*70.0*um;
-    double mylarZ = airZ + 2*70.0*um;
-
-    G4Box* mylar_box = new G4Box("mylar_box", mylarX/2, mylarY/2, mylarZ/2);
-    G4LogicalVolume* mylar_log = new G4LogicalVolume(mylar_box, teflon, "mylar_log", 0,0,0);
-    G4PVPlacement* mylar_phys = new G4PVPlacement(0, G4ThreeVector(0,0,0), mylar_log, "Mylar", logicWorld, false, 0);
-
-    G4Box* air_box = new G4Box("air_box", airX/2, airY/2, airZ/2);
-    G4LogicalVolume* air_log = new G4LogicalVolume(air_box, teflon, "air_log", 0,0,0);
-    G4PVPlacement* air_phys = new G4PVPlacement(0, G4ThreeVector(-70.0*um,0,0), air_log, "AirLayer", mylar_log, false, 0);
+    G4Box* teflon_box = new G4Box("teflon_box", teflonX/2, teflonY/2, teflonZ/2);
+    G4LogicalVolume* teflon_log = new G4LogicalVolume(teflon_box, teflon, "teflon_log", 0,0,0);
+    G4PVPlacement* teflon_phys = new G4PVPlacement(0, G4ThreeVector(0,0,0), teflon_log, "Teflon", logicWorld, false, 0);
 
     G4Box* det_box = new G4Box("det_box", detX/2, detY/2, detZ/2);
     G4LogicalVolume* det_log = new G4LogicalVolume(det_box, scintilator, "det_log", 0,0,0);
-    G4PVPlacement* det_phys = new G4PVPlacement(0, G4ThreeVector(-50.0*um,0,0), det_log, "Detector", air_log, false, 0);
+    G4PVPlacement* det_phys = new G4PVPlacement(0, G4ThreeVector(0,0,0), det_log, "Detector", teflon_log, false, 0);
 
     double r = 0.5*mm;
     double z = detX;
@@ -328,7 +325,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     //G4PVPlacement* pmt_phys = new G4PVPlacement(0,G4ThreeVector(-detX/2+pmtX/2,0,0),pmt_log,"pmt",det_log,false,0);
 
     MaterialPropertiesScintillator();
-    MaterialPropertiesTeflon(mylar_log,air_phys,mylar_phys);
+    MaterialPropertiesTeflon(teflon_log,det_phys,teflon_phys);
     MaterialPropertiesFiber();
     MaterialPropertiesPMT(photocath_log,photocath_phys,pmt_phys);
 
