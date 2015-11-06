@@ -181,7 +181,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
                                  false,			//no boolean operation
                                  0);			//copy number
 
-    detX = 40.0*cm;
+    detX = 200.0*cm;
     detY = 20.0*cm;
     detZ = 1.0*cm;
 
@@ -272,7 +272,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 	G4PVPlacement* clad2_pla = new G4PVPlacement(0,G4ThreeVector(0.,0.,-0.3*mm),clad2_log,
 		      "Cladding2",Holder_log,false,0);
 
-    int nFibers = 10;
+    int nFibers = 2;
     double length = detY/nFibers;
     for (int i = 0 ; i < nFibers ; i++)
     {
