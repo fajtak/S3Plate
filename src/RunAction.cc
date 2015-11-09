@@ -39,6 +39,7 @@
 #include "G4UnitsTable.hh"
 
 #include <string>
+#include <time.h>
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -70,7 +71,7 @@ void RunAction::BeginOfRunAction(const G4Run* aRun)
     histDetected = new TH1F("Detected","Number of photons detected in one event",3000,0,3000);
     photoWaveProduced = new TH1F("waveProduced","Wavelength spectra of produced photons",1000,0,1000);
     photoWaveDetected = new TH1F("waveDetected","Wavelength spectra of detected photons",1000,0,1000);
-    time = new TH1F("time", "Time distribution of detected p.e.",1000,0,1000);
+    timeH = new TH1F("time", "Time distribution of detected p.e.",1000,0,1000);
     fiber = new TH1F("fiber", "Distribution of hited fibers",30,-15,15);
     std::string fileName = "time";
     std::string fileName2 = "fiber";
@@ -82,6 +83,7 @@ void RunAction::BeginOfRunAction(const G4Run* aRun)
     fileName2 += ".txt";
     timeFile.open(fileName.c_str());
     fiberFile.open(fileName2.c_str());
+    time(&myTime);
 }
 
 
@@ -124,8 +126,15 @@ void RunAction::EndOfRunAction(const G4Run* aRun)
 
   TObjString*  dimensions = new TObjString();
 
-  char print[50];
-  sprintf(print, "%.2f %.2f %.2f cm", partGen->GetX()/cm , partGen->GetY()/cm, partGen->GetZ()/cm);
+  struct tm * timeinfo;
+
+  timeinfo = localtime(&myTime);
+
+  char buffer[80];
+  strftime(buffer,80,"%F--%H-%M-%S",timeinfo);
+
+  char print[100];
+  sprintf(print, "%.2f %.2f %.2f cm %s ", partGen->GetX()/cm , partGen->GetY()/cm, partGen->GetZ()/cm,buffer);
   dimensions->SetString(print);
 
   f->mkdir(print);
@@ -136,7 +145,7 @@ void RunAction::EndOfRunAction(const G4Run* aRun)
   histDetected->Write();
   photoWaveProduced->Write();
   photoWaveDetected->Write();
-  time->Write();
+  timeH->Write();
   fiber->Write();
   timeFile.close();
   fiberFile.close();
@@ -147,7 +156,7 @@ void RunAction::EndOfRunAction(const G4Run* aRun)
     delete histDetected;
     delete photoWaveProduced;
     delete photoWaveDetected;
-    delete time;
+    delete timeH;
     delete fiber;
 
   //dimensions->Write();
@@ -171,7 +180,7 @@ void RunAction::EndOfRunAction(const G4Run* aRun)
 
  void RunAction::fillTime(double newTime)
  {
-    time->Fill(newTime);
+    timeH->Fill(newTime);
     timeFile << newTime << " ";
  }
 

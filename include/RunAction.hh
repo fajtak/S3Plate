@@ -45,6 +45,7 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include <time.h>
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -80,11 +81,13 @@ class RunAction : public G4UserRunAction
         TH1F *histDetected;
         TH1F *photoWaveProduced;
         TH1F *photoWaveDetected;
-        TH1F *time;
+        TH1F *timeH;
         TH1F *fiber;
 
         ofstream timeFile;
         ofstream fiberFile;
+
+        time_t myTime;
 
         PrimaryGeneratorAction* partGen;
 };
