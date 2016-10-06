@@ -161,8 +161,8 @@ void DetectorConstruction::DefineMaterials()
 
 G4VPhysicalVolume* DetectorConstruction::Construct()
 {
-    WorldSizeXY = 1.0*m;
-    WorldSizeZ = 1.0*m;
+    WorldSizeXY = 2.0*m;
+    WorldSizeZ = 2.0*m;
     //
     // World
     //
@@ -272,13 +272,16 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 	G4PVPlacement* clad2_pla = new G4PVPlacement(0,G4ThreeVector(0.,0.,-0.3*mm),clad2_log,
 		      "Cladding2",Holder_log,false,0);
 
-    int nFibers = 2;
+    /*int nFibers = 10;
     double length = detY/nFibers;
     for (int i = 0 ; i < nFibers ; i++)
     {
         G4PVPlacement* Holder_pla = new G4PVPlacement(rm,G4ThreeVector(0.0,(-detY/2+length/2 + length*i),detZ/2-holder_rmax),Holder_log,
 		      "Holder",det_log,false,0);
-    }
+    }*/
+
+    G4PVPlacement* Holder_pla = new G4PVPlacement(rm,G4ThreeVector(0.0,(-detY/2+holder_rmax),0),Holder_log,
+		      "Holder",det_log,false,0);
 
     //****************** Build PMTs
     double d_mtl=0.6*mm;
@@ -325,7 +328,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     //G4PVPlacement* pmt_phys = new G4PVPlacement(0,G4ThreeVector(-detX/2+pmtX/2,0,0),pmt_log,"pmt",det_log,false,0);
 
     MaterialPropertiesScintillator();
-    MaterialPropertiesTeflon(teflon_log,det_phys,teflon_phys);
+    //MaterialPropertiesTeflon(teflon_log,det_phys,teflon_phys);
     MaterialPropertiesFiber();
     MaterialPropertiesPMT(photocath_log,photocath_phys,pmt_phys);
 
@@ -362,7 +365,7 @@ void DetectorConstruction::MaterialPropertiesTeflon(G4LogicalVolume* mylar_log, 
     reflectivityEntries--;
 
     G4MaterialPropertiesTable* mylarMPT = new G4MaterialPropertiesTable();
-    mylarMPT -> AddProperty("REFLECTIVITY",reflectivityEnergy,reflectivityIndex,reflectivityEntries);
+    //mylarMPT -> AddProperty("REFLECTIVITY",reflectivityEnergy,reflectivityIndex,reflectivityEntries);
     mylarMPT -> AddProperty("EFFICIENCY",reflectivityEnergy,efficiencyIndex,reflectivityEntries);
 
 

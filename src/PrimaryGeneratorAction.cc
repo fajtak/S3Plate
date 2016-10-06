@@ -60,9 +60,9 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(
     G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
     G4String particleName;
     G4ParticleDefinition* particle
-                    = particleTable->FindParticle(particleName="e-");
+                    = particleTable->FindParticle(particleName="mu-");
     particleGun->SetParticleDefinition(particle);
-    particleGun->SetParticleEnergy(1.0*MeV);
+    particleGun->SetParticleEnergy(1.0*GeV);
 
     x = 0.0*cm;
     y = 0.0*cm;
@@ -88,8 +88,12 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     //G4double x = (-1.0+2.0*G4UniformRand())*2.5*cm + 15.0*cm;
     if (point)
     {
-        particleGun->SetParticlePosition(G4ThreeVector(x,y,z));
-        //G4cout << x << " " << y << " " << z << G4endl;
+        double deltaX = G4RandGauss::shoot(0,4);
+        double deltaY = G4RandGauss::shoot(0,4);
+        deltaX = deltaX*mm;
+        deltaY = deltaY*mm;
+        particleGun->SetParticlePosition(G4ThreeVector(x+deltaX,y+deltaY,z));
+        //G4cout << x+deltaX/mm << " " << y+deltaY/mm << " " << z/mm << G4endl;
     }
     if (wholeDet)
     {

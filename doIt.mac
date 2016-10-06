@@ -7,13 +7,9 @@
 #
 #/gun/particle e+
 #/gun/energy 300 MeV
-/myPG/position 0.0 0.0 1.0
+/myPG/position 95.0 0.0 1.0
+/myPG/point true
+/run/beamOn 50
 #
-/run/beamOn 1
-#
-/myPG/position -15.0 0.0 1.0
-#
-/run/beamOn 1
-/myPG/position 15.0 0.0 1.0
-# 
-/run/beamOn 1
+#/myPG/position 15.0 0.0 1.0
+#/run/beamOn 100
