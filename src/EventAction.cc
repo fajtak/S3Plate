@@ -41,6 +41,8 @@
 #include "G4UnitsTable.hh"
 
 #include "Randomize.hh"
+#include <fstream>
+#include <iostream>
 #include <iomanip>
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

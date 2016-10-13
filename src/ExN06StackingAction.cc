@@ -38,6 +38,10 @@
 
 #include "EventAction.hh"
 
+#include <CLHEP/Units/PhysicalConstants.h>
+
+using namespace CLHEP;
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 ExN06StackingAction::ExN06StackingAction(EventAction* evt)

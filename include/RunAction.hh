@@ -47,6 +47,8 @@
 #include <iomanip>
 #include <time.h>
 
+using namespace std;
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 class G4Run;

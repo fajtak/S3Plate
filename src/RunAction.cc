@@ -41,6 +41,8 @@
 #include <string>
 #include <time.h>
 
+using namespace CLHEP;
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 RunAction::RunAction(PrimaryGeneratorAction* PG) : partGen(PG)

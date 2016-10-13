@@ -59,6 +59,8 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+using namespace CLHEP;
+
 PhysicsList::PhysicsList():  G4VUserPhysicsList()
 {
   defaultCutValue = 1.0*mm;
@@ -265,7 +267,9 @@ void PhysicsList::ConstructOp()
     //theScintillationProcess->AddSaturation(emSaturation);
 
     G4OpticalSurfaceModel themodel = unified;
-    theBoundaryProcess->SetModel(themodel);
+
+// vfe: pisu na nete, ze je to deprecated, ze to treba zakomentovat (googlil som meno triedy + SetModel
+//    theBoundaryProcess->SetModel(themodel);
 
     theParticleIterator->reset();
     while( (*theParticleIterator)() ){

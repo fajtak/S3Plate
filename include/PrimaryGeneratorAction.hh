@@ -35,8 +35,11 @@
 #ifndef PrimaryGeneratorAction_h
 #define PrimaryGeneratorAction_h 1
 
+#include <CLHEP/Units/PhysicalConstants.h>
 #include "G4VUserPrimaryGeneratorAction.hh"
 #include "globals.hh"
+
+using namespace CLHEP;
 
 class G4ParticleGun;
 class G4Event;

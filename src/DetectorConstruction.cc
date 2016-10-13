@@ -67,6 +67,12 @@
 #include <fstream>
 
 using namespace std;
+using namespace CLHEP;
+
+void PrintError(G4String fileName)
+{
+  G4cout<<"Error opening file: "<<fileName<<G4endl;
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -357,7 +363,12 @@ void DetectorConstruction::MaterialPropertiesTeflon(G4LogicalVolume* mylar_log, 
             reflectivityEnergy[18 - reflectivityEntries] = (1240/wavelength)*eV;
             reflectivityEntries++;
         }
-    }else G4cout<<"Error opening file: "<<reflectivity_file<<G4endl;
+    }
+    //else G4cout<<"Error opening file: "<<reflectivity_file<<G4endl;
+    else
+    {
+	    PrintError(reflectivity_file);
+    }
     Readreflectivity.close();
     reflectivityEntries--;
 
@@ -397,7 +408,12 @@ void DetectorConstruction::MaterialPropertiesScintillator()
             rindexEnergy[76 - rindexEntries] = (1240/wavelength)*eV;
             rindexEntries++;
         }
-    }else G4cout<<"Error opening file: "<<rindex_file<<G4endl;
+    }//else G4cout<<"Error opening file: "<<rindex_file<<G4endl;
+    else 
+    {
+	    PrintError(rindex_file);
+    }
+
     ReadRindex.close();
     rindexEntries--;
 
@@ -422,7 +438,12 @@ void DetectorConstruction::MaterialPropertiesScintillator()
             scintEmitSlow[500 - scintEntries] = scintEmit[500 - scintEntries];
             scintEntries++;
         }
-    }else G4cout<<"Error opening file: "<<Scint_file<<G4endl;
+    }//else G4cout<<"Error opening file: "<<Scint_file<<G4endl;
+    else
+    {
+	    PrintError(Scint_file);
+    }
+
     ReadScint.close();
     scintEntries--;
 
@@ -445,7 +466,13 @@ void DetectorConstruction::MaterialPropertiesScintillator()
             Absorb[500 - absorbEntries]=varabsorblength*m;
             absorbEntries++;
         }
-    }else G4cout<<"Error opening file: "<<ReadAbsorb<<G4endl;
+    }
+    // vfe: trosku upravene, povedne mi to nedavalo zmysel
+    //else G4cout<<"Error opening file: "<<ReadAbsorb<<G4endl;
+    else
+    {
+	PrintError(ReadAbsorbLength);
+    }
     ReadAbsorb.close();
     absorbEntries--;
 
@@ -468,7 +495,11 @@ void DetectorConstruction::MaterialPropertiesScintillator()
             wlsEnergy[500 - wlsScintEntries] = (1240/wavelength)*eV;
             wlsScintEntries++;
         }
-    }else G4cout<<"Error opening file: "<<wls_Scint_file<<G4endl;
+    }//else G4cout<<"Error opening file: "<<wls_Scint_file<<G4endl;
+    else
+    {
+	    PrintError(wls_Scint_file);
+    }
     ReadWLSScint.close();
     wlsScintEntries--;
 
@@ -490,7 +521,14 @@ void DetectorConstruction::MaterialPropertiesScintillator()
             wlsAbsorb[500 - wlsAbsorbEntries]=varabsorblength*m;
             wlsAbsorbEntries++;
         }
-    }else G4cout<<"Error opening file: "<<ReadWLSAbsorb<<G4endl;
+    //vfe: podobne ako predtym (r:449) som celkom nepochopil, ako to mohlo predtym fungovat
+    }
+    //else G4cout<<"Error opening file: "<<ReadWLSAbsorb<<G4endl;
+    else
+    {
+	PrintError(ReadWLSAbsorbLength);
+    }
+
     ReadWLSAbsorb.close();
     wlsAbsorbEntries--;
 
@@ -570,7 +608,11 @@ void DetectorConstruction::MaterialPropertiesFiber()
             wlsabs[27-wlsabsEntries] = varabsorblength*m;
             wlsabsEntries++;
         }
-    }else G4cout<<"Error opening file: "<<wlsabs_file<<G4endl;
+    }//else G4cout<<"Error opening file: "<<wlsabs_file<<G4endl;
+    else
+    {
+	    PrintError(wlsabs_file);
+    }
     ReadwlsAbs.close();
     wlsabsEntries--;
 
@@ -593,7 +635,11 @@ void DetectorConstruction::MaterialPropertiesFiber()
             wlsEnergy[21 - wlsEntries] = (1240/wavelength)*eV;
             wlsEntries++;
         }
-    }else G4cout<<"Error opening file: "<<wls_file<<G4endl;
+    }//else G4cout<<"Error opening file: "<<wls_file<<G4endl;
+    else
+    {
+	    PrintError(wls_file);
+    }
     ReadWLS.close();
     wlsEntries--;
 
@@ -658,7 +704,11 @@ void DetectorConstruction::MaterialPropertiesPMT(G4LogicalVolume* photocath_log,
             qeffEnergy[18 - qeffEntries] = (1240/wavelength)*eV;
             qeffEntries++;
         }
-    }else G4cout<<"Error opening file: "<<qeff_file<<G4endl;
+    }//else G4cout<<"Error opening file: "<<qeff_file<<G4endl;
+    else 
+    {
+	    PrintError(qeff_file);
+    }
     ReadQeff.close();
     qeffEntries--;
 

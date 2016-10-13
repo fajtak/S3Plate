@@ -45,6 +45,8 @@
 
 #include <math.h>
 
+using namespace CLHEP;
+
 ////#include "G4RunManager.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

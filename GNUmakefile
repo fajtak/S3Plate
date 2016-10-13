@@ -15,8 +15,10 @@ endif
 all: lib bin
 
 include $(G4INSTALL)/config/architecture.gmk
+#include $(G4INSTALL)/share/Geant4-10.2.2/geant4make/config/architecture.gmk
 
 EXTRALIBS := $(shell $(ROOTSYS)/bin/root-config --libs)
 CPPFLAGS += $(shell $(ROOTSYS)/bin/root-config --cflags)
 
 include $(G4INSTALL)/config/binmake.gmk
+#include $(G4INSTALL)/share/Geant4-10.2.2/geant4make/config/binmake.gmk
