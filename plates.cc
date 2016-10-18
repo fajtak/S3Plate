@@ -1,154 +1,71 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  Geant4 software  is  copyright of the Copyright Holders  of *
-// * the Geant4 Collaboration.  It is provided  under  the terms  and *
-// * conditions of the Geant4 Software License,  included in the file *
-// * LICENSE and available at  http://cern.ch/geant4/license .  These *
-// * include a list of copyright holders.                             *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GEANT4 collaboration.                      *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the Geant4 Software license.          *
-// ********************************************************************
-//
-//
-// $Id: exampleN03.cc,v 1.39 2010-12-01 05:56:17 allison Exp $
-// GEANT4 tag $Name: geant4-09-04-patch-01 $
-//
-//
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+#include <G4MTRunManager.hh>
+#include <G4UImanager.hh>
 
-#include "G4RunManager.hh"
-#include "G4UImanager.hh"
+#include <Randomize.hh>
 
-#include "Randomize.hh"
-
-#include "DetectorConstruction.hh"
-#include "PhysicsList.hh"
-#include "PrimaryGeneratorAction.hh"
-#include "RunAction.hh"
-#include "EventAction.hh"
-#include "SteppingAction.hh"
-#include "SteppingVerbose.hh"
-#include "ExN06StackingAction.hh"
-
-#ifdef G4VIS_USE
-#include "G4VisExecutive.hh"
-#endif
-
-#ifdef G4UI_USE
-#include "G4UIExecutive.hh"
-#endif
+#include <DetectorConstruction.hh>
+#include <PhysicsList.hh>
+#include <PrimaryGeneratorAction.hh>
+#include <RunAction.hh>
+#include <EventAction.hh>
+#include <SteppingAction.hh>
+#include <SteppingVerbose.hh>
+#include <StackingAction.hh>
+#include <UserActionInitialization.hh>
 
 #include <ctime>
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+#ifndef SAFE_DELETE
+#define SAFE_DELETE(x) if ((x) != nullptr) { delete(x); (x) = nullptr; }
+#endif
 
-int main(int argc,char** argv)
+int main(int, char**)
 {
-  // Choose the Random engine
-  //
-    long seed;
-    time_t systime = time(NULL);
-    seed = (long) systime;
-    CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
-    CLHEP::HepRandom::setTheSeed(seed);
-
-  // User Verbose output class
-  //
+  CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);       
+  CLHEP::HepRandom::setTheSeed((long) time(nullptr));
   G4VSteppingVerbose::SetInstance(new SteppingVerbose);
 
-  // Construct the default run manager
-  //
-  G4RunManager * runManager = new G4RunManager;
+  auto runManager = new G4MTRunManager;
 
-  // Set mandatory initialization classes
-  //
-  DetectorConstruction* detector = new DetectorConstruction;
+  if (runManager == nullptr)
+  {
+    return -1;
+  }
+
+  runManager->SetNumberOfThreads(4);
+
+
+  auto detector = new DetectorConstruction();
   runManager->SetUserInitialization(detector);
-  //
-  PhysicsList* physics = new PhysicsList;
+  auto physics = new PhysicsList();  
   runManager->SetUserInitialization(physics);
 
-  // Set user action classes
-  //
-  PrimaryGeneratorAction* gen_action =
-                          new PrimaryGeneratorAction(detector);
+   
+  auto gen_action = new PrimaryGeneratorAction(detector);
+  auto run_action = new RunAction(gen_action);
+  auto event_action = new EventAction(run_action);
+
+/*
+  auto stepping_action = new SteppingAction(detector, event_action);
+  auto stacking_action = new StackingAction(event_action);
+  
   runManager->SetUserAction(gen_action);
-  //
-  RunAction* run_action = new RunAction(gen_action);
   runManager->SetUserAction(run_action);
-  //
-  EventAction* event_action = new EventAction(run_action);
   runManager->SetUserAction(event_action);
-  //
-  SteppingAction* stepping_action =
-                    new SteppingAction(detector, event_action);
   runManager->SetUserAction(stepping_action);
-
-  G4UserStackingAction* stacking_action = new ExN06StackingAction(event_action);
   runManager->SetUserAction(stacking_action);
+*/
 
-  // Initialize G4 kernel
-  //
+  auto actions = new UserActionInitialization(detector, event_action);
+  runManager->SetUserInitialization(actions);
+
+
   runManager->Initialize();
 
-#ifdef G4VIS_USE
-  // Initialize visualization
-  G4VisManager* visManager = new G4VisExecutive;
-  // G4VisExecutive can take a verbosity argument - see /vis/verbose guidance.
-  // G4VisManager* visManager = new G4VisExecutive("Quiet");
-  visManager->Initialize();
-#endif
+  G4int numberOfEvent = 10;
+  runManager->BeamOn(numberOfEvent);
 
-  // Get the pointer to the User Interface manager
-  G4UImanager* UImanager = G4UImanager::GetUIpointer();
-
-  if (argc==2)   // batch mode
-    {
-      G4String command = "/control/execute ";
-      G4String fileName = argv[1];
-      UImanager->ApplyCommand(command+fileName);
-    }
-  else
-    {
-        if(argc > 2){
-            #ifdef G4VIS_USE
-                UImanager->ApplyCommand("/control/execute visO.mac");
-            #endif
-        }
-            // interactive mode : define UI session
-            //UImanager->ApplyCommand("/run/verbose 1");
-            //UImanager->ApplyCommand("/event/verbose 1");
-            //UImanager->ApplyCommand("/tracking/verbose 1");
-            G4int numberOfEvent = 10;
-
-            runManager->BeamOn(numberOfEvent);
-    }
-
-  // Job termination
-  // Free the store: user actions, physics_list and detector_description are
-  //                 owned and deleted by the run manager, so they should not
-  //                 be deleted in the main() program !
-#ifdef G4VIS_USE
-  delete visManager;
-#endif
-  delete runManager;
+  SAFE_DELETE(runManager);
 
   return 0;
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.....

@@ -1,37 +1,3 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  Geant4 software  is  copyright of the Copyright Holders  of *
-// * the Geant4 Collaboration.  It is provided  under  the terms  and *
-// * conditions of the Geant4 Software License,  included in the file *
-// * LICENSE and available at  http://cern.ch/geant4/license .  These *
-// * include a list of copyright holders.                             *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GEANT4 collaboration.                      *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the Geant4 Software license.          *
-// ********************************************************************
-//
-//
-// $Id: PhysicsList.cc,v 1.1 2010-10-18 15:56:17 maire Exp $
-// GEANT4 tag $Name: geant4-09-04-patch-01 $
-//
-//
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 #include "PhysicsList.hh"
 
 #include "G4ProcessManager.hh"
@@ -57,8 +23,6 @@
 #include "G4LossTableManager.hh"
 #include "G4EmSaturation.hh"
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 using namespace CLHEP;
 
 PhysicsList::PhysicsList():  G4VUserPhysicsList()
@@ -78,12 +42,8 @@ PhysicsList::PhysicsList():  G4VUserPhysicsList()
   new G4UnitDefinition("year",   "y",   "Time", year);
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 PhysicsList::~PhysicsList()
 {}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void PhysicsList::ConstructParticle()
 {
@@ -108,8 +68,6 @@ void PhysicsList::ConstructParticle()
   pIonConstructor.ConstructParticle();
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 void PhysicsList::ConstructProcess()
 {
   AddTransportation();
@@ -126,7 +84,7 @@ void PhysicsList::ConstructProcess()
   pmanager->AddProcess(radioactiveDecay, 0, -1, 1);
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//vfe; WTF?!!! akoze do pici ludia, to na keru picu takto v strede modulu davate include?
 
 #include "G4ComptonScattering.hh"
 #include "G4GammaConversion.hh"
@@ -148,8 +106,6 @@ void PhysicsList::ConstructProcess()
 #include "G4hPairProduction.hh"
 
 #include "G4ionIonisation.hh"
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void PhysicsList::ConstructEM()
 {
@@ -216,8 +172,6 @@ void PhysicsList::ConstructEM()
   }
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 #include "G4Decay.hh"
 
 void PhysicsList::ConstructDecay()
@@ -237,8 +191,6 @@ void PhysicsList::ConstructDecay()
   }
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 void PhysicsList::ConstructOp()
 {
     G4Cerenkov* theCerenkovProcess           = new G4Cerenkov("Cerenkov");
@@ -248,11 +200,6 @@ void PhysicsList::ConstructOp()
     G4OpMieHG* theMieHGScatteringProcess    = new G4OpMieHG();
     G4OpBoundaryProcess* theBoundaryProcess           = new G4OpBoundaryProcess();
     G4OpWLS* theWLSProcess = new G4OpWLS("OpWLS");
-    //theWLSProcess->UseTimeProfile("delta");
-
-    //  theCerenkovProcess->DumpPhysicsTable();
-    //  theScintillationProcess->DumpPhysicsTable();
-    //  theRayleighScatteringProcess->DumpPhysicsTable();
 
     theCerenkovProcess->SetMaxNumPhotonsPerStep(200);
     theCerenkovProcess->SetMaxBetaChangePerStep(10.0);
@@ -261,12 +208,7 @@ void PhysicsList::ConstructOp()
     theScintillationProcess->SetScintillationYieldFactor(1.);
     theScintillationProcess->SetTrackSecondariesFirst(true);
 
-    // Use Birks Correction in the Scintillation process
-
-    //G4EmSaturation* emSaturation = G4LossTableManager::Instance()->EmSaturation();
-    //theScintillationProcess->AddSaturation(emSaturation);
-
-    G4OpticalSurfaceModel themodel = unified;
+//    G4OpticalSurfaceModel themodel = unified;
 
 // vfe: pisu na nete, ze je to deprecated, ze to treba zakomentovat (googlil som meno triedy + SetModel
 //    theBoundaryProcess->SetModel(themodel);
@@ -276,10 +218,7 @@ void PhysicsList::ConstructOp()
     G4ParticleDefinition* particle = theParticleIterator->value();
     G4ProcessManager* pmanager = particle->GetProcessManager();
     G4String particleName = particle->GetParticleName();
-    //if (theCerenkovProcess->IsApplicable(*particle)) {
-    //  pmanager->AddProcess(theCerenkovProcess);
-    //  pmanager->SetProcessOrdering(theCerenkovProcess,idxPostStep);
-    //}
+
     if (theScintillationProcess->IsApplicable(*particle)) {
       pmanager->AddProcess(theScintillationProcess);
       pmanager->SetProcessOrderingToLast(theScintillationProcess, idxAtRest);
@@ -295,8 +234,6 @@ void PhysicsList::ConstructOp()
     }
     }
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void PhysicsList::SetCuts()
 {
@@ -315,6 +252,3 @@ void PhysicsList::SetCuts()
 
   if (verboseLevel>0) DumpCutValuesTable();
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
