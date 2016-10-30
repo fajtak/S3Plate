@@ -1,31 +1,57 @@
-#include "PhysicsList.hh"
+/*
+ * SCube simulation
+ * 
+ * Author(s): Lukas Fajtl
+ *            Vladimir Fekete, vladko.fekete@gmail.com
+ * 
+ * Copyright GNU General Public License v2.0.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with SCube.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
-#include "G4ProcessManager.hh"
-
-#include "G4BosonConstructor.hh"
-#include "G4LeptonConstructor.hh"
-#include "G4MesonConstructor.hh"
-#include "G4BosonConstructor.hh"
-#include "G4BaryonConstructor.hh"
-#include "G4IonConstructor.hh"
-#include "G4RadioactiveDecay.hh"
-#include "G4UnitsTable.hh"
-#include "G4ParticleTypes.hh"
-
-#include "G4Cerenkov.hh"
-#include "G4Scintillation.hh"
-#include "G4OpAbsorption.hh"
-#include "G4OpRayleigh.hh"
-#include "G4OpMieHG.hh"
-#include "G4OpBoundaryProcess.hh"
-#include "G4OpWLS.hh"
-
-#include "G4LossTableManager.hh"
-#include "G4EmSaturation.hh"
+#include <PhysicsList.hh>
+#include <G4ProcessManager.hh>
+#include <G4BosonConstructor.hh>
+#include <G4LeptonConstructor.hh>
+#include <G4MesonConstructor.hh>
+#include <G4BosonConstructor.hh>
+#include <G4BaryonConstructor.hh>
+#include <G4IonConstructor.hh>
+#include <G4RadioactiveDecay.hh>
+#include <G4UnitsTable.hh>
+#include <G4ParticleTypes.hh>
+#include <G4Cerenkov.hh>
+#include <G4Scintillation.hh>
+#include <G4OpAbsorption.hh>
+#include <G4OpRayleigh.hh>
+#include <G4OpMieHG.hh>
+#include <G4OpBoundaryProcess.hh>
+#include <G4OpWLS.hh>
+#include <G4ComptonScattering.hh>
+#include <G4GammaConversion.hh>
+#include <G4PhotoElectricEffect.hh>
+#include <G4eMultipleScattering.hh>
+#include <G4eIonisation.hh>
+#include <G4eBremsstrahlung.hh>
+#include <G4eplusAnnihilation.hh>
+#include <G4MuMultipleScattering.hh>
+#include <G4MuIonisation.hh>
+#include <G4MuBremsstrahlung.hh>
+#include <G4MuPairProduction.hh>
+#include <G4hMultipleScattering.hh>
+#include <G4hIonisation.hh>
+#include <G4hBremsstrahlung.hh>
+#include <G4hPairProduction.hh>
+#include <G4ionIonisation.hh>
+#include <G4LossTableManager.hh>
+#include <G4EmSaturation.hh>
+#include <G4Decay.hh>
 
 using namespace CLHEP;
 
-PhysicsList::PhysicsList():  G4VUserPhysicsList()
+PhysicsList::PhysicsList() :
+	G4VUserPhysicsList()
 {
   defaultCutValue = 1.0*mm;
   SetVerboseLevel(1);
@@ -36,6 +62,7 @@ PhysicsList::PhysicsList():  G4VUserPhysicsList()
   const G4double hour   = 60*minute;
   const G4double day    = 24*hour;
   const G4double year   = 365*day;
+	
   new G4UnitDefinition("minute", "min", "Time", minute);
   new G4UnitDefinition("hour",   "h",   "Time", hour);
   new G4UnitDefinition("day",    "d",   "Time", day);
@@ -43,7 +70,8 @@ PhysicsList::PhysicsList():  G4VUserPhysicsList()
 }
 
 PhysicsList::~PhysicsList()
-{}
+{
+}
 
 void PhysicsList::ConstructParticle()
 {
@@ -84,33 +112,11 @@ void PhysicsList::ConstructProcess()
   pmanager->AddProcess(radioactiveDecay, 0, -1, 1);
 }
 
-//vfe; WTF?!!! akoze do pici ludia, to na keru picu takto v strede modulu davate include?
-
-#include "G4ComptonScattering.hh"
-#include "G4GammaConversion.hh"
-#include "G4PhotoElectricEffect.hh"
-
-#include "G4eMultipleScattering.hh"
-#include "G4eIonisation.hh"
-#include "G4eBremsstrahlung.hh"
-#include "G4eplusAnnihilation.hh"
-
-#include "G4MuMultipleScattering.hh"
-#include "G4MuIonisation.hh"
-#include "G4MuBremsstrahlung.hh"
-#include "G4MuPairProduction.hh"
-
-#include "G4hMultipleScattering.hh"
-#include "G4hIonisation.hh"
-#include "G4hBremsstrahlung.hh"
-#include "G4hPairProduction.hh"
-
-#include "G4ionIonisation.hh"
-
 void PhysicsList::ConstructEM()
 {
   theParticleIterator->reset();
-  while( (*theParticleIterator)() ){
+  while( (*theParticleIterator)() )
+	{
     G4ParticleDefinition* particle = theParticleIterator->value();
     G4ProcessManager* pmanager = particle->GetProcessManager();
     G4String particleName = particle->GetParticleName();
@@ -172,8 +178,6 @@ void PhysicsList::ConstructEM()
   }
 }
 
-#include "G4Decay.hh"
-
 void PhysicsList::ConstructDecay()
 {
   // Add Decay Process
@@ -193,51 +197,67 @@ void PhysicsList::ConstructDecay()
 
 void PhysicsList::ConstructOp()
 {
-    G4Cerenkov* theCerenkovProcess           = new G4Cerenkov("Cerenkov");
-    G4Scintillation* theScintillationProcess      = new G4Scintillation("Scintillation");
-    G4OpAbsorption* theAbsorptionProcess         = new G4OpAbsorption();
-    G4OpRayleigh* theRayleighScatteringProcess = new G4OpRayleigh();
-    G4OpMieHG* theMieHGScatteringProcess    = new G4OpMieHG();
-    G4OpBoundaryProcess* theBoundaryProcess           = new G4OpBoundaryProcess();
-    G4OpWLS* theWLSProcess = new G4OpWLS("OpWLS");
+	G4Cerenkov* theCerenkovProcess = new G4Cerenkov("Cerenkov");
+	G4Scintillation* theScintillationProcess = new G4Scintillation("Scintillation");
+	G4OpAbsorption* theAbsorptionProcess = new G4OpAbsorption();
+	G4OpRayleigh* theRayleighScatteringProcess = new G4OpRayleigh();
+	G4OpMieHG* theMieHGScatteringProcess = new G4OpMieHG();
+	G4OpBoundaryProcess* theBoundaryProcess = new G4OpBoundaryProcess();
+	G4OpWLS* theWLSProcess = new G4OpWLS("OpWLS");
+	//theWLSProcess->UseTimeProfile("delta");
 
-    theCerenkovProcess->SetMaxNumPhotonsPerStep(200);
-    theCerenkovProcess->SetMaxBetaChangePerStep(10.0);
-    theCerenkovProcess->SetTrackSecondariesFirst(true);
+	//  theCerenkovProcess->DumpPhysicsTable();
+	//  theScintillationProcess->DumpPhysicsTable();
+	//  theRayleighScatteringProcess->DumpPhysicsTable();
 
-    theScintillationProcess->SetScintillationYieldFactor(1.);
-    theScintillationProcess->SetTrackSecondariesFirst(true);
+	theCerenkovProcess->SetMaxNumPhotonsPerStep(200);
+	theCerenkovProcess->SetMaxBetaChangePerStep(10.0);
+	theCerenkovProcess->SetTrackSecondariesFirst(true);
 
-//    G4OpticalSurfaceModel themodel = unified;
+	theScintillationProcess->SetScintillationYieldFactor(1.);
+	theScintillationProcess->SetTrackSecondariesFirst(true);
 
-// vfe: pisu na nete, ze je to deprecated, ze to treba zakomentovat (googlil som meno triedy + SetModel
-//    theBoundaryProcess->SetModel(themodel);
+	// Use Birks Correction in the Scintillation process
 
-    theParticleIterator->reset();
-    while( (*theParticleIterator)() ){
-    G4ParticleDefinition* particle = theParticleIterator->value();
-    G4ProcessManager* pmanager = particle->GetProcessManager();
-    G4String particleName = particle->GetParticleName();
+	//G4EmSaturation* emSaturation = G4LossTableManager::Instance()->EmSaturation();
+	//theScintillationProcess->AddSaturation(emSaturation);
 
-    if (theScintillationProcess->IsApplicable(*particle)) {
-      pmanager->AddProcess(theScintillationProcess);
-      pmanager->SetProcessOrderingToLast(theScintillationProcess, idxAtRest);
-      pmanager->SetProcessOrderingToLast(theScintillationProcess, idxPostStep);
-    }
-    if (particleName == "opticalphoton") {
-      G4cout << " AddDiscreteProcess to OpticalPhoton " << G4endl;
-      pmanager->AddDiscreteProcess(theAbsorptionProcess);
-      pmanager->AddDiscreteProcess(theRayleighScatteringProcess);
-      pmanager->AddDiscreteProcess(theMieHGScatteringProcess);
-      pmanager->AddDiscreteProcess(theBoundaryProcess);
-      pmanager->AddDiscreteProcess(theWLSProcess);
-    }
-    }
+	G4OpticalSurfaceModel themodel = unified;
+
+	// deprecated in Geant4 10+
+	//    theBoundaryProcess->SetModel(themodel);
+
+	theParticleIterator->reset();
+	while( (*theParticleIterator)() )
+	{
+		G4ParticleDefinition* particle = theParticleIterator->value();
+		G4ProcessManager* pmanager = particle->GetProcessManager();
+		G4String particleName = particle->GetParticleName();
+		
+		//if (theCerenkovProcess->IsApplicable(*particle)) {
+		//  pmanager->AddProcess(theCerenkovProcess);
+		//  pmanager->SetProcessOrdering(theCerenkovProcess,idxPostStep);
+		//}
+		if (theScintillationProcess->IsApplicable(*particle)) {
+			pmanager->AddProcess(theScintillationProcess);
+			pmanager->SetProcessOrderingToLast(theScintillationProcess, idxAtRest);
+			pmanager->SetProcessOrderingToLast(theScintillationProcess, idxPostStep);
+		}
+		if (particleName == "opticalphoton") {
+			G4cout << " AddDiscreteProcess to OpticalPhoton " << G4endl;
+			pmanager->AddDiscreteProcess(theAbsorptionProcess);
+			pmanager->AddDiscreteProcess(theRayleighScatteringProcess);
+			pmanager->AddDiscreteProcess(theMieHGScatteringProcess);
+			pmanager->AddDiscreteProcess(theBoundaryProcess);
+			pmanager->AddDiscreteProcess(theWLSProcess);
+		}
+	}
 }
 
 void PhysicsList::SetCuts()
 {
-  if (verboseLevel >0){
+  if (verboseLevel >0)
+	{
     G4cout << "PhysicsList::SetCuts:";
     G4cout << "CutLength : " << G4BestUnit(defaultCutValue,"Length") << G4endl;
   }
@@ -250,5 +270,9 @@ void PhysicsList::SetCuts()
   SetCutValue(defaultCutValue, "e+");
   SetCutValue(defaultCutValue, "proton");
 
-  if (verboseLevel>0) DumpCutValuesTable();
+  if (verboseLevel>0)
+	{
+		DumpCutValuesTable();
+	}
 }
+

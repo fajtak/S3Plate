@@ -1,64 +1,72 @@
+/*
+ * SCube simulation
+ * 
+ * Author(s): Lukas Fajtl
+ *            Vladimir Fekete, vladko.fekete@gmail.com
+ * 
+ * Copyright GNU General Public License v2.0.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with SCube.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #pragma once
-#include "G4VUserDetectorConstruction.hh"
-#include "globals.hh"
+#include <G4VUserDetectorConstruction.hh>
+#include <globals.hh>
 
 class G4Box;
 class G4LogicalVolume;
 class G4VPhysicalVolume;
 class G4PVPlacement;
 class G4Material;
-class G4UniformMagField;
+class DetectorMessenger;
 
-class DetectorConstruction : public G4VUserDetectorConstruction
+class DetectorConstruction : 
+	public G4VUserDetectorConstruction
 {
 public:
-
-   DetectorConstruction();
-   virtual ~DetectorConstruction();
+	DetectorConstruction();
+	virtual ~DetectorConstruction();
 
 public:
-
-     virtual G4VPhysicalVolume* Construct();
-
-     void MaterialPropertiesFiber();
-     void MaterialPropertiesScintillator();
-     void MaterialPropertiesPMT(G4LogicalVolume* photocath_log, G4PVPlacement* photocath_phys, G4PVPlacement* vacuumGap_phys);
-     void MaterialPropertiesTeflon(G4LogicalVolume*, G4PVPlacement*, G4PVPlacement*);
-
-     G4double GetWorldSizeXY()           {return WorldSizeXY;};
-     G4double GetWorldSizeZ()          {return WorldSizeZ;};
-
-     G4double GetDetX(){return detX;};
-     G4double GetDetY(){return detY;};
-     G4double GetDetZ(){return detZ;};
+	virtual G4VPhysicalVolume* Construct();
+	
+	G4double GetWorldSizeXY() { return worldSizeXY; };
+	G4double GetWorldSizeZ() { return worldSizeZ; };
+	G4double GetDetX(){ return detX; };
+	G4double GetDetY(){ return detY; };
+	G4double GetDetZ(){ return detZ; };
 
 private:
+	G4double worldSizeXY;
+	G4double worldSizeZ;
+	double detX;
+	double detY;
+	double detZ;
 
-     G4double           WorldSizeXY;
-     G4double           WorldSizeZ;
+	DetectorMessenger* detectorMessenger;
 
-    double detX;
-    double detY;
-    double detZ;
+	G4Box* solidWorld;
+	G4LogicalVolume* logicWorld;
+	G4VPhysicalVolume* physiWorld;
 
-//     DetectorMessenger* detectorMessenger;  //pointer to the Messenger
+	G4Material* aluminiumMaterial;
+	G4Material* airMaterial;
+	G4Material* scintilator;
+	G4Material* pstyrene;
+	G4Material* pMMA;
+	G4Material* fPethylene;
+	G4Material* mylar;
+	G4Material* borGlass;
+	G4Material* teflon;
+	G4Material* teflonMat;
 
-     G4Box*             solidWorld;    //pointer to the solid World
-     G4LogicalVolume*   logicWorld;    //pointer to the logical World
-     G4VPhysicalVolume* physiWorld;    //pointer to the physical World
-
-     G4Material*        aluminiumMaterial;
-     G4Material*        airMaterial;
-     G4Material*        scintilator;
-     G4Material*        Pstyrene;
-     G4Material*        PMMA;
-     G4Material*        fPethylene;
-     G4Material*        mylar;
-     G4Material*        borGlass;
-     G4Material*        teflon;
-     G4Material*        teflonMat;
-
-  private:
-
-     void DefineMaterials();
+private:
+	void MaterialPropertiesFiber();
+	void MaterialPropertiesScintillator();
+	void MaterialPropertiesPMT(G4LogicalVolume*, G4PVPlacement*, G4PVPlacement*);
+	void MaterialPropertiesTeflon(G4LogicalVolume*, G4PVPlacement*, G4PVPlacement*);
+	void DefineMaterials();
+	void PrintErrorMessage(G4String message);
 };
+

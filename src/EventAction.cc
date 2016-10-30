@@ -1,61 +1,104 @@
-#include "EventAction.hh"
+/*
+ * SCube simulation
+ * 
+ * Author(s): Lukas Fajtl
+ *            Vladimir Fekete, vladko.fekete@gmail.com
+ * 
+ * Copyright GNU General Public License v2.0.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with SCube.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
-#include "RunAction.hh"
-#include "EventActionMessenger.hh"
+#include <EventAction.hh>
+#include <g4root.hh>
 
-#include "G4Event.hh"
-#include "G4UnitsTable.hh"
-
-#include "Randomize.hh"
-#include <fstream>
-#include <iostream>
-#include <iomanip>
-
-EventAction::EventAction(RunAction* run) : runAct(run),printModulo(1),eventMessenger(0)
+EventAction::EventAction()
 {
-  eventMessenger = new EventActionMessenger(this);
 }
 
 EventAction::~EventAction()
 {
-  delete eventMessenger;
 }
 
-void EventAction::BeginOfEventAction(const G4Event* evt)
+void EventAction::BeginOfEventAction(const G4Event*)
 {
-  G4int evtNb = evt->GetEventID();
-  if (evtNb%10 == 0) {
-    G4cout << "\n---> Begin of event: " << evtNb << G4endl;
-  }
-
-  interaction = 0;
-  passage = 0;
-  energyDep = 0;
-  energyDepDead = 0;
-  nDetection = 0;
-  nProduced = 0;
+	interaction = 0;
+	passage = 0;
+	energyDep = 0;
+	energyDepDead = 0;
+	nDetection = 0;
+	nProduced = 0;
 }
 
 void EventAction::EndOfEventAction(const G4Event* evt)
 {
-  //accumulates statistic  
-  runAct->fillPerEvent(nProduced, nDetection,energyDep,energyDepDead);
+	auto analysisManager = G4AnalysisManager::Instance();
+	
+	if (analysisManager != nullptr)
+	{
+		auto interactHistoId = analysisManager->GetH1Id("Produced");
+		auto passHistoId = analysisManager->GetH1Id("Detected");
+		auto energyDepHistId = analysisManager->GetH1Id("Energy");
+		auto energyDepDeadHistId = analysisManager->GetH1Id("EnergyDead");
+		
+		analysisManager->FillH1(interactHistoId, nProduced);
+		analysisManager->FillH1(passHistoId, nDetection);
+		analysisManager->FillH1(energyDepHistId, energyDep);
+		analysisManager->FillH1(energyDepDeadHistId, energyDepDead);
+	}
 }
 
 void EventAction::PassWaveRun(int whichHist, double wavelength)
 {
-    if (whichHist == 1)
-        runAct->fillPhotoWaveProduced(wavelength);
-    if (whichHist == 2)
-        runAct->fillPhotoWaveDetected(wavelength);
+	auto analysisManager = G4AnalysisManager::Instance();
+	
+	if (analysisManager == nullptr)
+	{
+		return;
+	}	
+	
+	switch(whichHist)
+	{
+		case 1:
+		{
+			auto waveProducedHistoId =  analysisManager->GetH1Id("waveProduced");
+			analysisManager->FillH1(waveProducedHistoId, wavelength);
+		}
+		break;
+		case 2:
+		{
+			auto waveDetectedHistoId =  analysisManager->GetH1Id("waveDetected");
+			analysisManager->FillH1(waveDetectedHistoId, wavelength);
+		}
+		break;
+		default:
+			G4cout << "EventAction::PassWaveRun\tError: Invalid histogram id" << std::endl;
+	}
 }
 
 void EventAction::AddTime(double time)
 {
-    runAct->fillTime(time);
+	auto analysisManager = G4AnalysisManager::Instance();
+	
+	if (analysisManager == nullptr)
+	{
+		return;
+	}
+	
+	auto timeHistoId = analysisManager->GetH1Id("time");
+	analysisManager->FillH1(timeHistoId, time);
 }
 
 void EventAction::AddFiberDetected(int fiberID)
-{
-    runAct->fillFiber(fiberID);
+{	
+	auto analysisManager = G4AnalysisManager::Instance();
+	
+	if (analysisManager == nullptr)
+	{
+		return;
+	}
+	
+	auto timeHistoId = analysisManager->GetH1Id("fiber");
+	analysisManager->FillH1(timeHistoId, fiberID);
 }

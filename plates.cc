@@ -1,71 +1,85 @@
+/*
+ * SCube simulation
+ * 
+ * Author(s): Lukas Fajtl
+ *            Vladimir Fekete, vladko.fekete@gmail.com
+ * 
+ * Copyright GNU General Public License v2.0.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with SCube.  If not, see <http://www.gnu.org/licenses/>.
+ */
+ 
 #include <G4MTRunManager.hh>
 #include <G4UImanager.hh>
-
 #include <Randomize.hh>
-
 #include <DetectorConstruction.hh>
 #include <PhysicsList.hh>
-#include <PrimaryGeneratorAction.hh>
-#include <RunAction.hh>
-#include <EventAction.hh>
-#include <SteppingAction.hh>
 #include <SteppingVerbose.hh>
-#include <StackingAction.hh>
-#include <UserActionInitialization.hh>
-
+#include <ActionInitialization.hh>
 #include <ctime>
+#include <macros.hh>
 
-#ifndef SAFE_DELETE
-#define SAFE_DELETE(x) if ((x) != nullptr) { delete(x); (x) = nullptr; }
-#endif
+void ParseInputParameters(int argc, char** argv, G4int &numOfThreads, G4int& numOfEvents);
 
-int main(int, char**)
+int main(int argc, char** argv)
 {
-  CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);       
-  CLHEP::HepRandom::setTheSeed((long) time(nullptr));
-  G4VSteppingVerbose::SetInstance(new SteppingVerbose);
+	G4int numberOfEvents = 10;
+	G4int numberOfThreads = 10;
+	
+	ParseInputParameters(argc, argv, numberOfEvents, numberOfThreads);
+	
+	auto systime = std::time(NULL);
+	auto seed = (long) systime;
+	CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
+	CLHEP::HepRandom::setTheSeed(seed);	
+	
+	G4VSteppingVerbose::SetInstance(new SteppingVerbose);
+	
+	auto runManager = new G4MTRunManager();
+	
+	if (runManager == nullptr)
+	{
+		G4cout << "Main\t E: Cannot create multi-thread run manager" << std::endl;
+		return -1;
+	}
+	
+	auto detectorConstruction = new DetectorConstruction();
+	
+	runManager->SetNumberOfThreads(10);
+	runManager->SetUserInitialization(detectorConstruction);	
+	runManager->SetUserInitialization(new PhysicsList());
+	runManager->SetUserInitialization(new ActionInitialization(detectorConstruction));
+	
+	runManager->Initialize();
+	
+	runManager->BeamOn(numberOfEvents);
+	
+	SAFE_DELETE(runManager);
+	
+	return 0;
+}
 
-  auto runManager = new G4MTRunManager;
-
-  if (runManager == nullptr)
-  {
-    return -1;
-  }
-
-  runManager->SetNumberOfThreads(4);
-
-
-  auto detector = new DetectorConstruction();
-  runManager->SetUserInitialization(detector);
-  auto physics = new PhysicsList();  
-  runManager->SetUserInitialization(physics);
-
-   
-  auto gen_action = new PrimaryGeneratorAction(detector);
-  auto run_action = new RunAction(gen_action);
-  auto event_action = new EventAction(run_action);
-
-/*
-  auto stepping_action = new SteppingAction(detector, event_action);
-  auto stacking_action = new StackingAction(event_action);
-  
-  runManager->SetUserAction(gen_action);
-  runManager->SetUserAction(run_action);
-  runManager->SetUserAction(event_action);
-  runManager->SetUserAction(stepping_action);
-  runManager->SetUserAction(stacking_action);
-*/
-
-  auto actions = new UserActionInitialization(detector, event_action);
-  runManager->SetUserInitialization(actions);
-
-
-  runManager->Initialize();
-
-  G4int numberOfEvent = 10;
-  runManager->BeamOn(numberOfEvent);
-
-  SAFE_DELETE(runManager);
-
-  return 0;
+void ParseInputParameters(int argc, char** argv, G4int &numOfThreads, G4int& numOfEvents)
+{
+	if (argc != 3)
+	{
+		G4cout << "USAGE: plates <numberOfThreads> <numberOfEvents>" << G4endl;
+		G4cout << "Use -1 to ignore the variable" << G4endl;
+		G4cout << "Run without argument is equal to plates 10 10" << G4endl;
+		G4cout << G4endl;
+		return;
+	}
+		
+	auto threads = atoi(argv[1]);
+	if (threads != -1)
+	{
+		numOfThreads = threads;
+	}
+	
+	auto events = atoi(argv[2]);
+	if (events > -1)
+	{
+		numOfEvents = events;
+	}
 }

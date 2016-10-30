@@ -1,146 +1,143 @@
-#include "DetectorConstruction.hh"
+/*
+ * SCube simulation
+ * 
+ * Author(s): Lukas Fajtl
+ *            Vladimir Fekete, vladko.fekete@gmail.com
+ * 
+ * Copyright GNU General Public License v2.0.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with SCube.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
-#include "G4Material.hh"
-#include "G4NistManager.hh"
+#include <DetectorConstruction.hh>
+#include <DetectorMessenger.hh>
 
-#include "G4Box.hh"
-#include "G4Tubs.hh"
-#include "G4LogicalVolume.hh"
-#include "G4PVPlacement.hh"
-#include "G4PVReplica.hh"
-#include "G4UniformMagField.hh"
+#include <G4Material.hh>
+#include <G4NistManager.hh>
 
-#include "G4GeometryManager.hh"
-#include "G4PhysicalVolumeStore.hh"
-#include "G4LogicalVolumeStore.hh"
-#include "G4SolidStore.hh"
+#include <G4Box.hh>
+#include <G4Tubs.hh>
+#include <G4LogicalVolume.hh>
+#include <G4PVPlacement.hh>
+#include <G4PVReplica.hh>
+#include <G4UniformMagField.hh>
 
-#include "G4VisAttributes.hh"
-#include "G4Colour.hh"
+#include <G4GeometryManager.hh>
+#include <G4PhysicalVolumeStore.hh>
+#include <G4LogicalVolumeStore.hh>
+#include <G4SolidStore.hh>
 
-#include "G4OpticalSurface.hh"
-#include "G4LogicalBorderSurface.hh"
-#include "G4LogicalSkinSurface.hh"
+#include <G4VisAttributes.hh>
+#include <G4Colour.hh>
 
-#include "G4ThreeVector.hh"
-#include "G4SubtractionSolid.hh"
-#include "G4RotationMatrix.hh"
-#include "globals.hh"
+#include <G4OpticalSurface.hh>
+#include <G4LogicalBorderSurface.hh>
+#include <G4LogicalSkinSurface.hh>
 
-#include "G4MaterialPropertiesTable.hh"
+#include <G4ThreeVector.hh>
+#include <G4SubtractionSolid.hh>
+#include <G4RotationMatrix.hh>
+#include <globals.hh>
+
+#include <G4MaterialPropertiesTable.hh>
 #include <iostream>
 #include <fstream>
+#include <macros.hh>
 
-using namespace std;
 using namespace CLHEP;
-
-void PrintError(G4String fileName)
-{
-  G4cout<<"Error opening file: "<<fileName<<G4endl;
-}
 
 DetectorConstruction::DetectorConstruction()
 {
   // materials
   DefineMaterials();
+
+  // create commands for interactive definition of the calorimeter
+  detectorMessenger = new DetectorMessenger(this);
 }
 
 DetectorConstruction::~DetectorConstruction()
 { 
+	SAFE_DELETE(detectorMessenger);
 }
 
 void DetectorConstruction::DefineMaterials()
 {
+	// or use G4-NIST materials data base
+	//
+	G4NistManager* man = G4NistManager::Instance();
+	aluminiumMaterial = man->FindOrBuildMaterial("G4_Al");
+	airMaterial = man->FindOrBuildMaterial("G4_AIR");
+	mylar = man->FindOrBuildMaterial("G4_MYLAR");
+	//teflon = man->FindOrBuildMaterial("G4_TEFLON");
+	borGlass = man->FindOrBuildMaterial("G4_Pyrex_Glass");
 
-    // or use G4-NIST materials data base
-    //
-    G4NistManager* man = G4NistManager::Instance();
-    aluminiumMaterial = man->FindOrBuildMaterial("G4_Al");
-    airMaterial = man->FindOrBuildMaterial("G4_AIR");
-    mylar = man->FindOrBuildMaterial("G4_MYLAR");
-    //teflon = man->FindOrBuildMaterial("G4_TEFLON");
-    borGlass = man->FindOrBuildMaterial("G4_Pyrex_Glass");
+	G4double a, z, density;
 
-    G4double a, z, density;
+	G4int polyeth = 1;
+	G4int nC_eth = 2*polyeth;
+	G4int nH_eth = 4*polyeth;
 
-    G4int polyeth = 1;
-    G4int nC_eth = 2*polyeth;
-    G4int nH_eth = 4*polyeth;
+	G4Element* H  = new G4Element("Hydrogen","H",z=1.,a=1.01*g/mole);
+	G4Element* C  = new G4Element("Carbon","C", z=6.,a=12.01*g/mole);
+	G4Element* N = new G4Element("N", "N", z=7., a= 14.01*g/mole);
+	G4Element* O = new G4Element("O"  , "O", z=8., a= 16.00*g/mole);
+	G4Element* F  = man->FindOrBuildElement("F");
 
-    G4Element* H  = new G4Element("Hydrogen","H",z=1.,a=1.01*g/mole);
-    G4Element* C  = new G4Element("Carbon","C", z=6.,a=12.01*g/mole);
-    G4Element* N = new G4Element("N", "N", z=7., a= 14.01*g/mole);
-    G4Element* O = new G4Element("O"  , "O", z=8., a= 16.00*g/mole);
-    G4Element* F  = man->FindOrBuildElement("F");
+	scintilator = new G4Material("Scint", density= 1.03*g/cm3, 2);
+	scintilator->AddElement(C, 0.475);
+	scintilator->AddElement(H, 0.525);
 
-    scintilator = new G4Material("Scint", density= 1.03*g/cm3, 2);
-    scintilator->AddElement(C, 0.475);
-    scintilator->AddElement(H, 0.525);
+	pstyrene = new G4Material("Polystyrene", density= 1.03*g/cm3, 2);
+	pstyrene->AddElement(C, 8);
+	pstyrene->AddElement(H, 8);
+	
+	//Cladding(PMMA)
+	pMMA = new G4Material("PMMA", density=1190*kg/m3,3);
+	pMMA->AddElement(H,0.533);
+	pMMA->AddElement(C,0.336);
+	pMMA->AddElement(O,0.131);
+	
+	//Double cladding(flourinated polyethylene)
+	fPethylene = new G4Material("fPethylene", density=1430*kg/m3,2);
+	fPethylene->AddElement(H,nH_eth);
+	fPethylene->AddElement(C,nC_eth);
 
-    Pstyrene = new G4Material("Polystyrene", density= 1.03*g/cm3, 2);
-    Pstyrene->AddElement(C, 8);
-    Pstyrene->AddElement(H, 8);
-    //Cladding(PMMA)
-    PMMA = new G4Material("PMMA", density=1190*kg/m3,3);
-    PMMA->AddElement(H,0.533);
-    PMMA->AddElement(C,0.336);
-    PMMA->AddElement(O,0.131);
-    //Double cladding(flourinated polyethylene)
-    fPethylene = new G4Material("fPethylene", density=1430*kg/m3,2);
-    fPethylene->AddElement(H,nH_eth);
-    fPethylene->AddElement(C,nC_eth);
+	teflon = new G4Material("TeflonMat", density= 0.2*g/cm3, 2);
+	teflon->AddElement(C, 2);
+	teflon->AddElement(F, 4);
 
-    teflon = new G4Material("TeflonMat", density= 0.2*g/cm3, 2);
-    teflon->AddElement(C, 2);
-    teflon->AddElement(F, 4);
+	// print table
+	//
+	G4cout << *(G4Material::GetMaterialTable()) << G4endl;
 
-    // print table
-    //
-    G4cout << *(G4Material::GetMaterialTable()) << G4endl;
+	const G4int nEntries = 2;
 
-    const G4int nEntries = 2;
+	G4double photonEnergy[nEntries] = { 1.7*eV, 7.136*eV };
+	G4double refractiveIndex2[nEntries] = { 1.00, 1.00 };
+	G4double refractiveIndex3[nEntries] = { 1.315, 1.315};
 
-    G4double PhotonEnergy[nEntries] =
-            { 1.7*eV, 7.136*eV };
+	G4MaterialPropertiesTable* myMPT2 = new G4MaterialPropertiesTable();
+	myMPT2->AddProperty("RINDEX", photonEnergy, refractiveIndex2, nEntries);
 
-    G4double RefractiveIndex2[nEntries] =
-        { 1.00, 1.00 };
+	G4MaterialPropertiesTable* myMPT3 = new G4MaterialPropertiesTable();
+	myMPT3->AddProperty("RINDEX", photonEnergy, refractiveIndex3, nEntries);
 
-    G4double RefractiveIndex3[nEntries] =
-        { 1.315, 1.315};
-
-    G4MaterialPropertiesTable* myMPT2 = new G4MaterialPropertiesTable();
-    myMPT2->AddProperty("RINDEX", PhotonEnergy, RefractiveIndex2, nEntries);
-
-    G4MaterialPropertiesTable* myMPT3 = new G4MaterialPropertiesTable();
-    myMPT3->AddProperty("RINDEX", PhotonEnergy, RefractiveIndex3, nEntries);
-
-    airMaterial->SetMaterialPropertiesTable(myMPT2);
-    teflon->SetMaterialPropertiesTable(myMPT3);
-
+	airMaterial->SetMaterialPropertiesTable(myMPT2);
+	teflon->SetMaterialPropertiesTable(myMPT3);
 }
 
 G4VPhysicalVolume* DetectorConstruction::Construct()
 {
-    WorldSizeXY = 1.0*m;
-    WorldSizeZ = 1.0*m;
+    worldSizeXY = 1.0*m;
+    worldSizeZ = 1.0*m;
+		
     //
     // World
     //
-    solidWorld = new G4Box("World",				//its name
-                   WorldSizeXY/2,WorldSizeXY/2,WorldSizeZ/2);	//its size
-
-    logicWorld = new G4LogicalVolume(solidWorld,		//its solid
-                                   airMaterial,	//its material
-                                   "World");		//its name
-
-    physiWorld = new G4PVPlacement(0,			//no rotation
-                 G4ThreeVector(),	//at (0,0,0)
-                                 logicWorld,		//its logical volume
-                                 "World",		//its name
-                                 0,			//its mother  volume
-                                 false,			//no boolean operation
-                                 0);			//copy number
+    solidWorld = new G4Box("World", worldSizeXY/2, worldSizeXY/2, worldSizeZ/2);
+    logicWorld = new G4LogicalVolume(solidWorld, airMaterial, "World");
+    physiWorld = new G4PVPlacement(0, G4ThreeVector(), logicWorld, "World", 0, false, 0);
 
     detX = 200.0*cm;
     detY = 20.0*cm;
@@ -189,56 +186,35 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     double holder_sphi = fiber_sphi;
     double holder_ephi = fiber_ephi;
 
-    G4Tubs* Holder_tube =
-      new G4Tubs("Holder",holder_rmin,holder_rmax,holder_z/2,holder_sphi,holder_ephi);
+    G4Tubs* Holder_tube = new G4Tubs("Holder",holder_rmin,holder_rmax,holder_z/2,holder_sphi,holder_ephi);
+    G4LogicalVolume* Holder_log = new G4LogicalVolume(Holder_tube,airMaterial,"Holder",0,0,0);
 
-    G4LogicalVolume* Holder_log =
-      new G4LogicalVolume(Holder_tube,airMaterial,
-			  "Holder",0,0,0);
+    G4Tubs* Fiber_tube = new G4Tubs("Fiber",fiber_rmin,fiber_rmax,fiber_z/2,fiber_sphi,fiber_ephi);
 
-    G4Tubs* Fiber_tube =
-      new G4Tubs("Fiber",fiber_rmin,fiber_rmax,fiber_z/2,fiber_sphi,fiber_ephi);
-
-    G4LogicalVolume* Fiber_log =
-      new G4LogicalVolume(Fiber_tube,Pstyrene,
-			  "Fiber",0,0,0);
+    G4LogicalVolume* Fiber_log = new G4LogicalVolume(Fiber_tube,pstyrene, "Fiber",0,0,0);
 
     // Cladding (first layer)
     //
-    G4Tubs* clad1_tube =
-      new G4Tubs("Cladding1",clad1_rmin,clad1_rmax,clad1_z/2,clad1_sphi,
-		 clad1_ephi);
-
-    G4LogicalVolume* clad1_log =
-      new G4LogicalVolume(clad1_tube,PMMA,
-			  "Cladding1",0,0,0);
+    G4Tubs* clad1_tube = new G4Tubs("Cladding1",clad1_rmin,clad1_rmax,clad1_z/2,clad1_sphi, clad1_ephi);
+    G4LogicalVolume* clad1_log = new G4LogicalVolume(clad1_tube,pMMA,"Cladding1",0,0,0);
 
     // Cladding (second layer)
     //
-    G4Tubs* clad2_tube =
-      new G4Tubs("Cladding2",clad2_rmin,clad2_rmax,clad2_z/2,clad2_sphi,
-		 clad2_ephi);
-
-    G4LogicalVolume* clad2_log =
-      new G4LogicalVolume(clad2_tube,fPethylene,
-			  "Cladding2",0,0,0);
+    G4Tubs* clad2_tube = new G4Tubs("Cladding2",clad2_rmin,clad2_rmax,clad2_z/2,clad2_sphi, clad2_ephi);
+    G4LogicalVolume* clad2_log = new G4LogicalVolume(clad2_tube,fPethylene,"Cladding2",0,0,0);
 
     G4RotationMatrix* rm = new G4RotationMatrix();
     rm->rotateY(90*deg);
 
-    G4PVPlacement* Fiber_Pla = new G4PVPlacement(0,G4ThreeVector(0.,0.,0.),Fiber_log,
-		      "Fiber", clad1_log,false,0);
-    G4PVPlacement* clad1_pla = new G4PVPlacement(0,G4ThreeVector(0.,0.,0.),clad1_log,
-		      "Cladding1",clad2_log,false,0);
-	G4PVPlacement* clad2_pla = new G4PVPlacement(0,G4ThreeVector(0.,0.,-0.3*mm),clad2_log,
-		      "Cladding2",Holder_log,false,0);
+    G4PVPlacement* Fiber_Pla = new G4PVPlacement(0,G4ThreeVector(0.,0.,0.),Fiber_log,"Fiber", clad1_log,false,0);
+    G4PVPlacement* clad1_pla = new G4PVPlacement(0,G4ThreeVector(0.,0.,0.),clad1_log,"Cladding1",clad2_log,false,0);
+		G4PVPlacement* clad2_pla = new G4PVPlacement(0,G4ThreeVector(0.,0.,-0.3*mm),clad2_log,"Cladding2",Holder_log,false,0);
 
     int nFibers = 2;
     double length = detY/nFibers;
     for (int i = 0 ; i < nFibers ; i++)
     {
-        G4PVPlacement* Holder_pla = new G4PVPlacement(rm,G4ThreeVector(0.0,(-detY/2+length/2 + length*i),detZ/2-holder_rmax),Holder_log,
-		      "Holder",det_log,false,0);
+        G4PVPlacement* Holder_pla = new G4PVPlacement(rm,G4ThreeVector(0.0,(-detY/2+length/2 + length*i),detZ/2-holder_rmax),Holder_log,"Holder",det_log,false,0);
     }
 
     //****************** Build PMTs
@@ -257,31 +233,19 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     G4double pmtY = 18.0*mm;
     G4double pmtZ = 10.0*mm;
 
-    G4Tubs* pmt = new G4Tubs("pmt_tube",innerRadius_pmt,outerRadius_pmt,
-		     height_pmt/2,startAngle_pmt,spanningAngle_pmt);
-
-    G4Tubs* photocath = new G4Tubs("photocath_tube",innerRadius_pmt,outerRadius_pmt,
-             height_photoca/2,startAngle_pmt,spanningAngle_pmt);
+    G4Tubs* pmt = new G4Tubs("pmt_tube",innerRadius_pmt,outerRadius_pmt,height_pmt/2,startAngle_pmt,spanningAngle_pmt);
+    G4Tubs* photocath = new G4Tubs("photocath_tube",innerRadius_pmt,outerRadius_pmt,height_photoca/2,startAngle_pmt,spanningAngle_pmt);
 
     //G4Box* pmt = new G4Box("pmt_box",pmtX/2,pmtY/2,pmtZ/2);
-
     //G4Box* photocath = new G4Box("photocath_box",photocathX/2,pmtY/2,pmtZ/2);
 
-    G4LogicalVolume* pmt_log = new G4LogicalVolume(pmt,borGlass,
-				  "pmt_log");
-    G4LogicalVolume* photocath_log = new G4LogicalVolume(photocath,
-					aluminiumMaterial,
-					"photocath_log");
-
-    G4PVPlacement* photocath_phys = new G4PVPlacement(0,G4ThreeVector(0,0,+height_pmt/2-height_photoca/2),
-				       photocath_log,"photocath",
-				       pmt_log,false,0);
-
+    G4LogicalVolume* pmt_log = new G4LogicalVolume(pmt,borGlass,"pmt_log");
+    G4LogicalVolume* photocath_log = new G4LogicalVolume(photocath,aluminiumMaterial,"photocath_log");
+    G4PVPlacement* photocath_phys = new G4PVPlacement(0,G4ThreeVector(0,0,+height_pmt/2-height_photoca/2),photocath_log,"photocath",pmt_log,false,0);
+		
     //G4PVPlacement* photocath_phys = new G4PVPlacement(0,G4ThreeVector(-pmtX/2+photocathX/2,0,0),photocath_log,"photocath",pmt_log,false,0);
 
-    G4PVPlacement* pmt_phys = new G4PVPlacement(0,G4ThreeVector(0,0,+holder_z/2-height_pmt/2),
-				       pmt_log,"pmt",
-				       Holder_log,false,0);
+    G4PVPlacement* pmt_phys = new G4PVPlacement(0,G4ThreeVector(0,0,+holder_z/2-height_pmt/2),pmt_log,"pmt",Holder_log,false,0);
 
     //G4PVPlacement* pmt_phys = new G4PVPlacement(0,G4ThreeVector(-detX/2+pmtX/2,0,0),pmt_log,"pmt",det_log,false,0);
 
@@ -303,7 +267,7 @@ void DetectorConstruction::MaterialPropertiesTeflon(G4LogicalVolume* mylar_log, 
     G4double efficiencyIndex[500] = {0};
 
     G4int reflectivityEntries = 0;
-    ifstream Readreflectivity;
+    std::ifstream Readreflectivity;
 
     //G4String reflectivity_file="/home/fajtak/work/g4work/My/Aivaras/ucl/input_files/teflon_ref_coeff.txt";
     G4String reflectivity_file="input_files/teflon_ref_coeff.txt";
@@ -319,11 +283,11 @@ void DetectorConstruction::MaterialPropertiesTeflon(G4LogicalVolume* mylar_log, 
             reflectivityEntries++;
         }
     }
-    //else G4cout<<"Error opening file: "<<reflectivity_file<<G4endl;
     else
     {
-	    PrintError(reflectivity_file);
+	    PrintErrorMessage("Cannot open input file : " + reflectivity_file);
     }
+    
     Readreflectivity.close();
     reflectivityEntries--;
 
@@ -349,7 +313,7 @@ void DetectorConstruction::MaterialPropertiesScintillator()
     G4double scintIndex[500] = {0};
 
     G4int rindexEntries = 0;
-    ifstream ReadRindex;
+    std::ifstream ReadRindex;
 
     //G4String rindex_file="/home/fajtak/work/g4work/My/Aivaras/ucl/input_files/rindexScint.txt";
     G4String rindex_file="input_files/rindexScint.txt";
@@ -366,7 +330,7 @@ void DetectorConstruction::MaterialPropertiesScintillator()
     }//else G4cout<<"Error opening file: "<<rindex_file<<G4endl;
     else 
     {
-	    PrintError(rindex_file);
+	    PrintErrorMessage("Cannot open input file : " + rindex_file);
     }
 
     ReadRindex.close();
@@ -377,7 +341,7 @@ void DetectorConstruction::MaterialPropertiesScintillator()
     G4double scintEmitSlow[501] = {0};
 
     G4int scintEntries = 0;
-    ifstream ReadScint;
+    std::ifstream ReadScint;
 
     //G4String Scint_file="/home/fajtak/work/g4work/My/Aivaras/ucl/input_files/pTP_emission.txt";
     G4String Scint_file="input_files/pTP_emission.txt";
@@ -393,10 +357,10 @@ void DetectorConstruction::MaterialPropertiesScintillator()
             scintEmitSlow[500 - scintEntries] = scintEmit[500 - scintEntries];
             scintEntries++;
         }
-    }//else G4cout<<"Error opening file: "<<Scint_file<<G4endl;
+    }
     else
     {
-	    PrintError(Scint_file);
+	    PrintErrorMessage("Cannot open input file : " + Scint_file);
     }
 
     ReadScint.close();
@@ -407,7 +371,7 @@ void DetectorConstruction::MaterialPropertiesScintillator()
     G4double absorbEnergy[501] = {0};
     G4double Absorb[501] = {0};
 
-    ifstream ReadAbsorb;
+    std::ifstream ReadAbsorb;
     //G4String ReadAbsorbLength="/home/fajtak/work/g4work/My/Aivaras/ucl/input_files/PlasticBulkAbsorb2.cfg";
     G4String ReadAbsorbLength="input_files/PlasticBulkAbsorb2.cfg";
 
@@ -422,11 +386,9 @@ void DetectorConstruction::MaterialPropertiesScintillator()
             absorbEntries++;
         }
     }
-    // vfe: trosku upravene, povedne mi to nedavalo zmysel
-    //else G4cout<<"Error opening file: "<<ReadAbsorb<<G4endl;
     else
     {
-	PrintError(ReadAbsorbLength);
+			PrintErrorMessage("Cannot open input file : " + ReadAbsorbLength);
     }
     ReadAbsorb.close();
     absorbEntries--;
@@ -435,7 +397,7 @@ void DetectorConstruction::MaterialPropertiesScintillator()
     G4double wlsEmit[501] = {0};
 
     G4int wlsScintEntries = 0;
-    ifstream ReadWLSScint;
+    std::ifstream ReadWLSScint;
 
     //G4String wls_Scint_file="/home/fajtak/work/g4work/My/Aivaras/ucl/input_files/full_popop_emission.cfg";
     G4String wls_Scint_file="input_files/full_popop_emission.cfg";
@@ -450,10 +412,10 @@ void DetectorConstruction::MaterialPropertiesScintillator()
             wlsEnergy[500 - wlsScintEntries] = (1240/wavelength)*eV;
             wlsScintEntries++;
         }
-    }//else G4cout<<"Error opening file: "<<wls_Scint_file<<G4endl;
+    }
     else
     {
-	    PrintError(wls_Scint_file);
+			PrintErrorMessage("Cannot open input file : " + wls_Scint_file);
     }
     ReadWLSScint.close();
     wlsScintEntries--;
@@ -462,7 +424,7 @@ void DetectorConstruction::MaterialPropertiesScintillator()
     G4double wlsAbsorbEnergy[501] = {0};
     G4double wlsAbsorb[501] = {0};
 
-    ifstream ReadWLSAbsorb;
+    std::ifstream ReadWLSAbsorb;
     //G4String ReadWLSAbsorbLength="/home/fajtak/work/g4work/My/Aivaras/ucl/input_files/scintAbsLen.txt";
     G4String ReadWLSAbsorbLength="input_files/scintAbsLen.txt";
 
@@ -475,13 +437,11 @@ void DetectorConstruction::MaterialPropertiesScintillator()
             wlsAbsorbEnergy[500 - wlsAbsorbEntries]=(1240/wavelength)*eV;
             wlsAbsorb[500 - wlsAbsorbEntries]=varabsorblength*m;
             wlsAbsorbEntries++;
-        }
-    //vfe: podobne ako predtym (r:449) som celkom nepochopil, ako to mohlo predtym fungovat
-    }
-    //else G4cout<<"Error opening file: "<<ReadWLSAbsorb<<G4endl;
+        }    
+    }    
     else
     {
-	PrintError(ReadWLSAbsorbLength);
+			PrintErrorMessage("Cannot open input file : " + ReadWLSAbsorbLength);
     }
 
     ReadWLSAbsorb.close();
@@ -525,7 +485,7 @@ void DetectorConstruction::MaterialPropertiesFiber()
     G4double abs[500] = {0};
 
     G4int absEntries = 0;
-    ifstream ReadAbs;
+    std::ifstream ReadAbs;
 
     //G4String abs_file="/home/fajtak/work/g4work/My/Aivaras/ucl/input_files/fiberAbs.txt";
     G4String abs_file="input_files/fiberAbs.txt";
@@ -540,7 +500,11 @@ void DetectorConstruction::MaterialPropertiesFiber()
             abs[38 - absEntries] = varabsorblength*m;
             absEntries++;
         }
-    }else G4cout<<"Error opening file: "<<abs_file<<G4endl;
+    }  
+		else 
+		{
+			PrintErrorMessage("Cannot open input file : " + abs_file);
+		}
     ReadAbs.close();
     absEntries--;
 
@@ -548,7 +512,7 @@ void DetectorConstruction::MaterialPropertiesFiber()
     G4double wlsabs[500] = {0};
 
     G4int wlsabsEntries = 0;
-    ifstream ReadwlsAbs;
+    std::ifstream ReadwlsAbs;
 
     //G4String wlsabs_file="/home/fajtak/work/g4work/My/Aivaras/ucl/input_files/fiberWLSabs.txt";
     G4String wlsabs_file="input_files/fiberWLSabs.txt";
@@ -563,10 +527,10 @@ void DetectorConstruction::MaterialPropertiesFiber()
             wlsabs[27-wlsabsEntries] = varabsorblength*m;
             wlsabsEntries++;
         }
-    }//else G4cout<<"Error opening file: "<<wlsabs_file<<G4endl;
+    }
     else
     {
-	    PrintError(wlsabs_file);
+			PrintErrorMessage("Cannot open input file : " + wlsabs_file);
     }
     ReadwlsAbs.close();
     wlsabsEntries--;
@@ -575,7 +539,7 @@ void DetectorConstruction::MaterialPropertiesFiber()
     G4double wlsEmit[501] = {0};
 
     G4int wlsEntries = 0;
-    ifstream ReadWLS;
+    std::ifstream ReadWLS;
 
     //G4String wls_file="/home/fajtak/work/g4work/My/Aivaras/ucl/input_files/fiberWLS.txt";
     G4String wls_file="input_files/fiberWLS.txt";
@@ -590,10 +554,10 @@ void DetectorConstruction::MaterialPropertiesFiber()
             wlsEnergy[21 - wlsEntries] = (1240/wavelength)*eV;
             wlsEntries++;
         }
-    }//else G4cout<<"Error opening file: "<<wls_file<<G4endl;
+    }
     else
     {
-	    PrintError(wls_file);
+			PrintErrorMessage("Cannot open input file : " + wls_file);
     }
     ReadWLS.close();
     wlsEntries--;
@@ -605,14 +569,14 @@ void DetectorConstruction::MaterialPropertiesFiber()
     MPTFiber->AddProperty("WLSCOMPONENT",wlsEnergy,wlsEmit,wlsEntries);
     MPTFiber->AddConstProperty("WLSTIMECONSTANT", 0.5*ns);
     MPTFiber->AddProperty("ABSLENGTH",     absEnergy, abs,     absEntries);
-    Pstyrene->SetMaterialPropertiesTable(MPTFiber);
+    pstyrene->SetMaterialPropertiesTable(MPTFiber);
 
     G4double RefractiveIndexClad1[WLS_NUMENTRIES]={ 1.49,1.49};
     G4MaterialPropertiesTable* MPTClad1 = new G4MaterialPropertiesTable();
     MPTClad1->AddProperty("RINDEX",WLS_Energy,RefractiveIndexClad1,
             WLS_NUMENTRIES);
     MPTClad1->AddProperty("ABSLENGTH",WLS_Energy,AbsFiber,WLS_NUMENTRIES);
-    PMMA->SetMaterialPropertiesTable(MPTClad1);
+    pMMA->SetMaterialPropertiesTable(MPTClad1);
 
     G4double RefractiveIndexClad2[WLS_NUMENTRIES]={ 1.42,1.42};
     G4MaterialPropertiesTable* MPTClad2 = new G4MaterialPropertiesTable();
@@ -644,7 +608,7 @@ void DetectorConstruction::MaterialPropertiesPMT(G4LogicalVolume* photocath_log,
     G4double qeff[501] = {0};
 
     G4int qeffEntries = 0;
-    ifstream ReadQeff;
+    std::ifstream ReadQeff;
 
     //G4String qeff_file="/home/fajtak/work/g4work/My/Aivaras/ucl/input_files/R7600u-300.txt";
     G4String qeff_file="input_files/R7600u-300.txt";
@@ -659,10 +623,10 @@ void DetectorConstruction::MaterialPropertiesPMT(G4LogicalVolume* photocath_log,
             qeffEnergy[18 - qeffEntries] = (1240/wavelength)*eV;
             qeffEntries++;
         }
-    }//else G4cout<<"Error opening file: "<<qeff_file<<G4endl;
+    }
     else 
     {
-	    PrintError(qeff_file);
+			PrintErrorMessage("Cannot open input file : " + qeff_file);
     }
     ReadQeff.close();
     qeffEntries--;
@@ -681,3 +645,9 @@ void DetectorConstruction::MaterialPropertiesPMT(G4LogicalVolume* photocath_log,
     //new G4LogicalSkinSurface("photocath_surf",photocath_log,photocath_opsurf);
     G4LogicalBorderSurface* photoCathSurface = new G4LogicalBorderSurface("photoCathSurface",vacuumGap_phys,photocath_phys,photocath_opsurf);
 }
+
+void DetectorConstruction::PrintErrorMessage(G4String message)
+{
+	G4cout << "DetectorConstruction\t Error : " + message << G4endl;
+}
+

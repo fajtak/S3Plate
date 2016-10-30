@@ -1,8 +1,19 @@
-#pragma once
+/*
+ * SCube simulation
+ * 
+ * Author(s): Lukas Fajtl
+ *            Vladimir Fekete, vladko.fekete@gmail.com
+ * 
+ * Copyright GNU General Public License v2.0.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with SCube.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
+#pragma once
 #include <CLHEP/Units/PhysicalConstants.h>
-#include "G4VUserPrimaryGeneratorAction.hh"
-#include "globals.hh"
+#include <G4VUserPrimaryGeneratorAction.hh>
+#include <globals.hh>
 
 using namespace CLHEP;
 
@@ -11,13 +22,14 @@ class G4Event;
 class DetectorConstruction;
 class PrimaryGeneratorMessenger;
 
-class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
+class PrimaryGeneratorAction : 
+	public G4VUserPrimaryGeneratorAction
 {
 public:
   PrimaryGeneratorAction(DetectorConstruction*);
   virtual ~PrimaryGeneratorAction();
 
-  void GeneratePrimaries(G4Event*);
+  virtual void GeneratePrimaries(G4Event*);
   void SetRndmFlag(G4String val) { rndmFlag = val;}
   double GetX(void){return x;};
   double GetY(void){return y;};
@@ -32,11 +44,11 @@ public:
   void SetKalabashky(void);
 
 private:
-  G4ParticleGun*           particleGun;	 //pointer a to G4  class
-  DetectorConstruction*    Detector;     //pointer to the geometry
+  G4ParticleGun* particleGun;
+  DetectorConstruction* detector;
 
-  PrimaryGeneratorMessenger* gunMessenger;   //messenger of this class
-  G4String                   rndmFlag;	     //flag for a rndm impact point
+  PrimaryGeneratorMessenger* gunMessenger;
+  G4String rndmFlag;
 
   G4double x;
   G4double y;
@@ -46,3 +58,5 @@ private:
   G4bool wholeDet;
   G4bool kalabashky;
 };
+
+

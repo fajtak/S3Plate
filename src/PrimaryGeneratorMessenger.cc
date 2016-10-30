@@ -1,60 +1,77 @@
-#include "PrimaryGeneratorMessenger.hh"
+/*
+ * SCube simulation
+ * 
+ * Author(s): Lukas Fajtl
+ *            Vladimir Fekete, vladko.fekete@gmail.com
+ * 
+ * Copyright GNU General Public License v2.0.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with SCube.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
-#include "PrimaryGeneratorAction.hh"
-#include "G4UIdirectory.hh"
-#include "G4UIcmdWithAString.hh"
-#include "G4UIcmdWith3Vector.hh"
-#include "G4UIcmdWithABool.hh"
+#include <PrimaryGeneratorMessenger.hh>
+#include <PrimaryGeneratorAction.hh>
+#include <G4UIdirectory.hh>
+#include <G4UIcmdWithAString.hh>
+#include <G4UIcmdWith3Vector.hh>
+#include <G4UIcmdWithABool.hh>
+#include <macros.hh>
 
-PrimaryGeneratorMessenger::PrimaryGeneratorMessenger(PrimaryGeneratorAction* Gun) : Action(Gun)
+PrimaryGeneratorMessenger::PrimaryGeneratorMessenger(PrimaryGeneratorAction* gun) :
+	action(gun)
 {
   gunDir = new G4UIdirectory("/myPG/");
   gunDir->SetGuidance("PrimaryGenerator control");
 
-  RndmCmd = new G4UIcmdWithAString("/myPG/rndm",this);
-  RndmCmd->SetGuidance("Shoot randomly the incident particle.");
-  RndmCmd->SetGuidance("  Choice : on(default), off");
-  RndmCmd->SetParameterName("choice",true);
-  RndmCmd->SetDefaultValue("on");
-  RndmCmd->SetCandidates("on off");
-  RndmCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
+  rndmCmd = new G4UIcmdWithAString("/myPG/rndm",this);
+  rndmCmd->SetGuidance("Shoot randomly the incident particle.");
+  rndmCmd->SetGuidance("  Choice : on(default), off");
+  rndmCmd->SetParameterName("choice",true);
+  rndmCmd->SetDefaultValue("on");
+  rndmCmd->SetCandidates("on off");
+  rndmCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
 
-  PositionCmd = new G4UIcmdWith3Vector("/myPG/position", this);
-  PositionCmd->SetGuidance("Set the position of the primary particle.");
+  positionCmd = new G4UIcmdWith3Vector("/myPG/position", this);
+  positionCmd->SetGuidance("Set the position of the primary particle.");
 
-  PointCmd = new G4UIcmdWithABool("/myPG/point",this);
-  WholeDetCmd = new G4UIcmdWithABool("/myPG/wholeDet",this);
-  KalabashkyCmd = new G4UIcmdWithABool("/myPG/kalabashky",this);
+  pointCmd = new G4UIcmdWithABool("/myPG/point",this);
+  wholeDetCmd = new G4UIcmdWithABool("/myPG/wholeDet",this);
+  kalabashkyCmd = new G4UIcmdWithABool("/myPG/kalabashky",this);
 }
 
 PrimaryGeneratorMessenger::~PrimaryGeneratorMessenger()
 {
-  delete RndmCmd;
-  delete gunDir;
-  delete PositionCmd;
-  delete PointCmd;
-  delete WholeDetCmd;
-  delete KalabashkyCmd;
+  SAFE_DELETE( rndmCmd );
+  SAFE_DELETE( gunDir );
+  SAFE_DELETE( positionCmd );
+  SAFE_DELETE( pointCmd );
+  SAFE_DELETE( wholeDetCmd );
+  SAFE_DELETE( kalabashkyCmd );
 }
 
 void PrimaryGeneratorMessenger::SetNewValue(G4UIcommand* command, G4String newValue)
 {
-    if( command == RndmCmd )
+    if( command == rndmCmd )
     {
-        Action->SetRndmFlag(newValue);
-    }else if (command == PositionCmd )
+        action->SetRndmFlag(newValue);
+    }
+    else if (command == positionCmd )
     {
-        Action->SetX(PositionCmd->GetNew3VectorValue(newValue).getX());
-        Action->SetY(PositionCmd->GetNew3VectorValue(newValue).getY());
-        Action->SetZ(PositionCmd->GetNew3VectorValue(newValue).getZ());
-    }else if (command == PointCmd )
+        action->SetX( positionCmd->GetNew3VectorValue(newValue).getX() );
+        action->SetY( positionCmd->GetNew3VectorValue(newValue).getY() );
+        action->SetZ( positionCmd->GetNew3VectorValue(newValue).getZ() );
+    }
+    else if (command == pointCmd )
     {
-        Action->SetPoint();
-    }else if (command == WholeDetCmd )
+        action->SetPoint();
+    }
+    else if (command == wholeDetCmd )
     {
-        Action->SetWholeDet();
-    }else if (command == KalabashkyCmd )
+        action->SetWholeDet();
+    }
+    else if (command == kalabashkyCmd )
     {
-        Action->SetKalabashky();
+        action->SetKalabashky();
     }
 }
