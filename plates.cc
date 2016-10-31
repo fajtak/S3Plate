@@ -46,7 +46,7 @@ int main(int argc, char** argv)
 	
 	auto detectorConstruction = new DetectorConstruction();
 	
-	runManager->SetNumberOfThreads(10);
+	runManager->SetNumberOfThreads(numberOfThreads);
 	runManager->SetUserInitialization(detectorConstruction);	
 	runManager->SetUserInitialization(new PhysicsList());
 	runManager->SetUserInitialization(new ActionInitialization(detectorConstruction));
