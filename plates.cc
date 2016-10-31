@@ -27,7 +27,7 @@ int main(int argc, char** argv)
 	G4int numberOfEvents = 10;
 	G4int numberOfThreads = 10;
 	
-	ParseInputParameters(argc, argv, numberOfEvents, numberOfThreads);
+	ParseInputParameters(argc, argv, numberOfThreads, numberOfEvents);
 	
 	auto systime = std::time(NULL);
 	auto seed = (long) systime;
